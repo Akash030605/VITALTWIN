@@ -1,0 +1,468 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        -0.9914047718048096,
+        3.075488567352295,
+        0.7745921611785889
+      ],
+      "min": [
+        -3.693134069442749,
+        -1.239558219909668,
+        -0.7745348215103149
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 185640,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        0.9999998211860657,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.9999998807907104,
+        -1.0,
+        -0.9999998211860657
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        0.9999980926513672,
+        0.9934442043304443,
+        0.9999956488609314,
+        1.0
+      ],
+      "min": [
+        -0.9999947547912598,
+        -0.9995957612991333,
+        -0.9999914765357971,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        0.9999023675918579,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        2.7314450562698767e-05
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 123760,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        0.9999023675918579,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        2.7314450562698767e-05
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 247520,
+      "componentType": 5126,
+      "count": 15470,
+      "max": [
+        0.9999023675918579,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        2.7314450562698767e-05
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 88806,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 371280,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        -1.1367727518081665,
+        2.7418909072875977,
+        0.7745921611785889
+      ],
+      "min": [
+        -3.693134069442749,
+        -0.7901988625526428,
+        -0.7745348215103149
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 491412,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        0.9999896883964539,
+        0.9999944567680359,
+        0.9999880194664001
+      ],
+      "min": [
+        -0.9998998641967773,
+        -0.9999995827674866,
+        -0.9999904036521912
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 247520,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        0.9999980926513672,
+        0.9934442043304443,
+        0.9999479055404663,
+        1.0
+      ],
+      "min": [
+        -0.9999352693557739,
+        -0.9995957612991333,
+        -0.9999443292617798,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 371280,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        0.7481673955917358,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        0.0001140358581324108
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 451368,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        0.7481673955917358,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        0.0001140358581324108
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 531456,
+      "componentType": 5126,
+      "count": 10011,
+      "max": [
+        0.7481673955917358,
+        0.8677059412002563
+      ],
+      "min": [
+        9.763240814208984e-05,
+        0.0001140358581324108
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 355224,
+      "componentType": 5125,
+      "count": 58002,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "neshallads (https://sketchfab.com/neshallads)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/human-kidney-e1476ceb1e3b4412af5418eee9c5ed08",
+      "title": "Human Kidney"
+    },
+    "generator": "Sketchfab-14.10.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 587232,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 611544,
+      "byteOffset": 587232,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 611544,
+      "byteOffset": 1198776,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 407696,
+      "byteOffset": 1810320,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2218016,
+      "uri": "kidney.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Kidney_Tex_baseColor.png"
+    },
+    {
+      "uri": "textures/Kidney_Tex_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Kidney_Tex_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Kidney_Tex",
+      "normalTexture": {
+        "index": 2
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "kidney02:kidney03:Group12708_Kidney Tex_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "TEXCOORD_1": 4,
+            "TEXCOORD_2": 5
+          },
+          "indices": 6,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Group12708_Kidney Tex_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 8,
+            "POSITION": 7,
+            "TANGENT": 9,
+            "TEXCOORD_0": 10,
+            "TEXCOORD_1": 11,
+            "TEXCOORD_2": 12
+          },
+          "indices": 13,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.3629753589630127,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        8.059672017846358e-17,
+        -0.3629753589630127,
+        0.0,
+        0.0,
+        0.3629753589630127,
+        8.059672017846358e-17,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "5bccdb79d8e34e53b741994c635f4dd7.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        98.68190002441406,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        98.68190002441274,
+        1.607732414580299e-05,
+        0.0,
+        0.0,
+        -1.607732414580299e-05,
+        98.68190002441274,
+        0.0,
+        126.79723358154297,
+        -12.190378189086914,
+        3.7352309226989746,
+        1.0
+      ],
+      "name": "kidney02:kidney03:Group12708"
+    },
+    {
+      "mesh": 0,
+      "name": "kidney02:kidney03:Group12708_Kidney Tex_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "matrix": [
+        -98.68190002441297,
+        -1.2085047299867452e-14,
+        -1.4900552350679266e-05,
+        0.0,
+        2.4155233546582217e-12,
+        98.68190002441274,
+        -1.6077324114064284e-05,
+        0.0,
+        1.4900552350679073e-05,
+        -1.6077324114064467e-05,
+        -98.68190002441165,
+        0.0,
+        -129.3933563232422,
+        12.439970970153809,
+        -3.811708927154541,
+        1.0
+      ],
+      "name": "Group12708"
+    },
+    {
+      "mesh": 1,
+      "name": "Group12708_Kidney Tex_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}
