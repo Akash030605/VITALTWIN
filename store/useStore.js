@@ -39,22 +39,22 @@ export const DEFAULT_ORGANS = ORGAN_IDS.map((id) => ({
   prediction10y: null,
 }));
 
-export const DUMMY_INPUT = {
-  smoking: "Never",
-  alcohol: "Never",
-  sleep: "7",
-  stress: "Low",
+const INITIAL_INPUT = {
+  smoking: "",
+  alcohol: "",
+  sleep: "",
+  stress: "",
   medical_conditions: [],
 };
 
-export const DUMMY_PROFILE = {
-  name: "Alex Smith",
-  age: "32",
-  gender: "Male",
-  height: "178",
-  weight: "72",
-  diet: "Good",
-  activity: "Moderate",
+const INITIAL_PROFILE = {
+  name: "",
+  age: "",
+  gender: "",
+  height: "",
+  weight: "",
+  diet: "",
+  activity: "",
 };
 
 function riskLevelToStatus(riskLevel) {
@@ -65,13 +65,15 @@ function riskLevelToStatus(riskLevel) {
 }
 
 export const useStore = create((set, get) => ({
-  profile: { ...DUMMY_PROFILE },
+  profile: { ...INITIAL_PROFILE },
   setProfile: (key, value) =>
     set((state) => ({ profile: { ...state.profile, [key]: value } })),
+  resetProfile: () => set({ profile: { ...INITIAL_PROFILE } }),
 
-  input: { ...DUMMY_INPUT },
+  input: { ...INITIAL_INPUT },
   setInput: (key, value) =>
     set((state) => ({ input: { ...state.input, [key]: value } })),
+  resetInput: () => set({ input: { ...INITIAL_INPUT } }),
 
   result: loadResult(),
   setResult: (result) => {
@@ -85,6 +87,16 @@ export const useStore = create((set, get) => ({
   clearResult: () => {
     saveResult(null);
     set({ result: null });
+  },
+
+  /** Clear report + reset all form inputs. */
+  clearAll: () => {
+    saveResult(null);
+    set({
+      result: null,
+      profile: { ...INITIAL_PROFILE },
+      input: { ...INITIAL_INPUT },
+    });
   },
 
   getOrganStatus: (organId) => {

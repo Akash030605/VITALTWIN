@@ -2,16 +2,17 @@
 
 import { useStore } from "../../store/useStore";
 
-export default function MedicalConditionsSummary() {
+export default function MedicalConditionsSummary({ conditions: conditionsProp }) {
   const input = useStore((s) => s.input);
-  const conditions = Array.isArray(input?.medical_conditions) ? input.medical_conditions : [];
+  const fromStore = Array.isArray(input?.medical_conditions) ? input.medical_conditions : [];
+  const conditions = Array.isArray(conditionsProp) ? conditionsProp : fromStore;
   const filtered = conditions.filter((c) => c != null && String(c).trim() !== "");
 
   if (filtered.length === 0) return null;
 
   return (
     <div
-      className="mb-6 rounded-xl border border-amber-500/30 bg-amber-950/20 px-5 py-4 inline-block"
+      className="rounded-xl border border-amber-500/30 bg-amber-950/20 px-5 py-4 w-full"
       role="region"
       aria-label="Reported medical conditions"
     >

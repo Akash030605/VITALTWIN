@@ -29,6 +29,8 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
   const readyRef = useRef(null);
   const sweepRef = useRef(null);
   const hudRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (!overlayRef.current) return;
@@ -37,7 +39,7 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
       const tl = gsap.timeline({
         onComplete: () => {
           gsap.to(overlayRef.current, { opacity: 0, duration: 0.9, ease: "power2.in" });
-          gsap.delayedCall(0.95, () => onComplete?.());
+          gsap.delayedCall(0.95, () => onCompleteRef.current?.());
         },
       });
 
@@ -86,7 +88,7 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
     }, overlayRef);
 
     return () => ctx.revert();
-  }, [onComplete]);
+  }, []);
 
   return (
     <div

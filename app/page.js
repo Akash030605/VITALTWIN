@@ -39,7 +39,7 @@ function buildReportSummary(result) {
 export default function HomePage() {
   const result = useStore((s) => s.result);
   const profile = useStore((s) => s.profile);
-  const clearResult = useStore((s) => s.clearResult);
+  const clearAll = useStore((s) => s.clearAll);
   const [copyStatus, setCopyStatus] = useState(null);
   const [mounted, setMounted] = useState(false);
   const pageRef = useRef(null);
@@ -83,11 +83,14 @@ export default function HomePage() {
     }
   };
 
+  // Dashboard only when we have a real report from the API (vital_score or overall_health_score).
+  const hasReport = mounted && result && typeof result === "object" && (result.vital_score != null || result.overall_health_score != null);
+
   return (
     <div ref={pageRef} className="min-h-screen flex flex-col">
       <AppHeader />
 
-      {mounted && result ? (
+      {hasReport ? (
         <>
           <DashboardBackground />
           <main className="flex-1 py-6 px-4 md:px-6 lg:px-8 overflow-y-auto relative w-full">
@@ -150,7 +153,7 @@ export default function HomePage() {
                     <button type="button" onClick={handleCopySummary} className="text-sm text-[var(--color-primary)] font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 rounded py-1.5 px-2 transition-opacity hover:opacity-90" aria-label="Copy report summary">
                       {copyStatus ?? "Copy report summary"}
                     </button>
-                    <button type="button" onClick={() => clearResult()} className="text-sm text-[var(--color-muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 rounded py-1.5 px-2 transition-colors" aria-label="Clear report">
+                    <button type="button" onClick={() => clearAll()} className="text-sm text-[var(--color-muted)] hover:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 rounded py-1.5 px-2 transition-colors" aria-label="Clear report">
                       Clear report
                     </button>
                   </div>

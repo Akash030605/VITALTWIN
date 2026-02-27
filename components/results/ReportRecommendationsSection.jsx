@@ -5,7 +5,7 @@ import WhatIfPanel from "./WhatIfPanel";
 
 export default function ReportRecommendationsSection({ result }) {
   const hasPriority = result?.priority_recommendations?.length > 0;
-  const hasWhatIf = result?.what_if_simulations;
+  const hasWhatIf = result != null;
 
   if (!hasPriority && !hasWhatIf) return null;
 
@@ -27,7 +27,7 @@ export default function ReportRecommendationsSection({ result }) {
             <h3 className="text-sm font-semibold text-[var(--color-primary)] uppercase tracking-wider">What if</h3>
             <span className="text-[10px] text-[var(--color-muted)] font-medium uppercase">Explore scenarios</span>
           </div>
-          <WhatIfPanel what_if_simulations={result.what_if_simulations} />
+          <WhatIfPanel what_if_simulations={result?.what_if_simulations} />
         </div>
       )}
     </section>

@@ -22,20 +22,22 @@ export default function RecommendationsPage() {
       <DashboardBackground />
       <AppHeader />
 
-      <main className="flex-1 py-10 px-4 md:px-6 overflow-y-auto relative">
-        <div className="max-w-2xl mx-auto">
+      <main className="flex-1 py-8 md:py-10 px-4 md:px-6 overflow-y-auto relative">
+        <div className="max-w-2xl mx-auto w-full">
           <DashboardLayout>
-            <div ref={contentRef}>
-              <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-1 text-glow-primary">Recommendations</h1>
-              <p className="text-[var(--color-muted)] mb-10">What to do next and how changes could improve your health.</p>
+            <div ref={contentRef} className="pb-24">
+              <header className="mb-8">
+                <h1 className="text-2xl md:text-3xl font-semibold text-[var(--foreground)] mb-2 text-glow-primary">Recommendations</h1>
+                <p className="text-[var(--color-muted)] text-sm md:text-base">What to do next and how changes could improve your health.</p>
+              </header>
 
-              <section className="mb-12">
-                <h2 className="text-xs font-medium text-[var(--color-primary)] uppercase tracking-wider mb-4">Priority actions</h2>
+              <section className="mb-10" aria-labelledby="priority-heading">
+                <h2 id="priority-heading" className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-wider mb-4">Priority actions</h2>
                 <PriorityRecommendations priority_recommendations={result?.priority_recommendations} />
               </section>
 
-              <section>
-                <h2 className="text-xs font-medium text-[var(--color-primary)] uppercase tracking-wider mb-4">What if</h2>
+              <section aria-labelledby="whatif-heading">
+                <h2 id="whatif-heading" className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-wider mb-4">What if</h2>
                 <WhatIfPanel what_if_simulations={result?.what_if_simulations} />
               </section>
             </div>

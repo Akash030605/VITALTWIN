@@ -14,6 +14,9 @@ const TAGLINES = [
 
 const PARALLAX_STRENGTH = 8;
 
+/** Stable deps so the hero entrance effect runs once; array length must stay constant for React. */
+const HERO_EFFECT_DEPS = Object.freeze([undefined]);
+
 export default function HeroWithModel({ onAnimationsReady }) {
   const containerRef = useRef(null);
   const modelWrapRef = useRef(null);
@@ -22,6 +25,8 @@ export default function HeroWithModel({ onAnimationsReady }) {
   const line2Ref = useRef(null);
   const line3Ref = useRef(null);
   const [hoveredLine, setHoveredLine] = useState(null);
+  const onAnimationsReadyRef = useRef(onAnimationsReady);
+  onAnimationsReadyRef.current = onAnimationsReady;
 
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
 
@@ -60,10 +65,10 @@ export default function HeroWithModel({ onAnimationsReady }) {
       gsap.fromTo(line1Ref.current, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.8, delay: 0.6, ease: "power3.out" });
       gsap.fromTo(line2Ref.current, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.8, delay: 1, ease: "power3.out" });
       gsap.fromTo(line3Ref.current, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.8, delay: 1.4, ease: "power3.out" });
-      if (onAnimationsReady) gsap.delayedCall(1.6, onAnimationsReady);
+      gsap.delayedCall(1.6, () => onAnimationsReadyRef.current?.());
     }, containerRef);
     return () => ctx.revert();
-  }, [onAnimationsReady]);
+  }, HERO_EFFECT_DEPS);
 
   return (
     <div
