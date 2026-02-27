@@ -13,20 +13,39 @@
   --color-muted: #64748b;
   --color-muted-dim: #475569;
   --font-heading: var(--font-poppins);
-  --font-body: var(--font-dm-sans);
+  --font-body: var(--font-poppins);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  letter-spacing: -0.05em;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -39,7 +58,7 @@ body {
 
 .font-heading {
   font-family: var(--font-heading), system-ui, sans-serif;
-  letter-spacing: -0.05em; /* tracking-tighter */
+  letter-spacing: -0.05em;
 }
 
 /* Healthcare forensics: dot grid */
@@ -120,6 +139,17 @@ body {
 .select-lab option:disabled {
   color: var(--color-muted);
 }
+
+/* Form dropdowns: ensure options are visible in native list (dark text on light) */
+.form-select option {
+  color: #111827;
+  background: #ffffff;
+}
+.form-select option:disabled {
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
 .select-lab:hover {
   border-color: rgba(20, 184, 166, 0.35);
 }
@@ -137,4 +167,215 @@ body {
 /* Glow text - teal clinical (cinematic) */
 .text-glow {
   text-shadow: 0 0 24px rgba(20, 184, 166, 0.4), 0 0 48px rgba(20, 184, 166, 0.15);
+}
+
+/* Hero headline - gradient, interactive */
+.hero-headline {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+.hero-headline:hover {
+  filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.35));
+}
+.gradient-text {
+  background: linear-gradient(135deg, #e8ecf1 0%, var(--color-primary) 45%, #99f6e4 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+}
+
+/* First page CTA - hover lift and glow */
+.landing-cta {
+  transition: transform 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+}
+.landing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.2);
+}
+.landing-cta:active {
+  transform: translateY(0);
+}
+
+/* ----- Game / cinematic UI ----- */
+/* HUD frame with corner brackets */
+.game-hud-frame {
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.15), inset 0 0 60px rgba(0, 0, 0, 0.3);
+}
+.game-hud-frame::before,
+.game-hud-frame::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--color-primary);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.7;
+}
+.game-hud-frame::before {
+  top: 8px;
+  left: 8px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+.game-hud-frame::after {
+  bottom: 8px;
+  right: 8px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* Mission / phase panel (page sections) */
+.game-panel {
+  border: 1px solid var(--color-surface-border);
+  background: rgba(15, 18, 22, 0.85);
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  position: relative;
+}
+.game-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(20, 184, 166, 0.3), transparent);
+  pointer-events: none;
+}
+
+/* Letterbox container - use on full-viewport sections */
+.letterbox {
+  box-shadow: inset 0 8vh 0 rgba(0, 0, 0, 0.4), inset 0 -8vh 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Tactical label */
+.tactical-label {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.9;
+}
+
+/* ----- Dashboard: futuristic healthcare UI ----- */
+/* Glassmorphism cards */
+.glass-card {
+  background: rgba(15, 22, 28, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(20, 184, 166, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.glass-card-glow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(20, 184, 166, 0.1), 0 0 40px rgba(20, 184, 166, 0.08);
+}
+.glass-card-glow:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(20, 184, 166, 0.25), 0 0 60px rgba(20, 184, 166, 0.12);
+}
+
+/* Hover lift + transition */
+.hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* Primary glow (text / borders) */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.25);
+}
+.text-glow-primary {
+  text-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
+}
+
+/* Pulse wave background (dashboard) */
+.pulse-wave-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+.pulse-wave-bg::before,
+.pulse-wave-bg::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.06) 0%, transparent 50%);
+  animation: pulse-wave 8s ease-in-out infinite;
+}
+.pulse-wave-bg::after {
+  animation-delay: -4s;
+  background: radial-gradient(circle at 30% 70%, rgba(45, 212, 191, 0.04) 0%, transparent 45%);
+}
+@keyframes pulse-wave {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Gauge pulse (live bar) */
+.gauge-pulse .gauge-fill {
+  animation: gauge-pulse 2s ease-in-out infinite;
+}
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* Scan ring (body model) */
+.scan-ring-wrap {
+  position: relative;
+}
+.scan-ring-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 2px solid rgba(20, 184, 166, 0.6);
+  opacity: 0;
+  animation: scan-ring-pulse 2.5s ease-out infinite;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+}
+.scan-ring-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  opacity: 0.7;
+  pointer-events: none;
+}
+@keyframes scan-ring-pulse {
+  0% { transform: scale(0.3); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* Body model glow overlay */
+.model-glow-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+/* Floating card subtle animation */
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
 }

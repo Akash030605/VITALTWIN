@@ -8,8 +8,8 @@ const Canvas = dynamic(
   () => import("@react-three/fiber").then((m) => m.Canvas),
   { ssr: false }
 );
-const HeartModelSceneCinematic = dynamic(
-  () => import("./three/HeartModelSceneCinematic").then((m) => m.default),
+const BrainModelSceneCinematic = dynamic(
+  () => import("./three/BrainModelSceneCinematic").then((m) => m.default),
   { ssr: false }
 );
 
@@ -24,10 +24,11 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
   const overlayRef = useRef(null);
   const modelWrapRef = useRef(null);
   const stepsRef = useRef([]);
-  const progressRef = useRef(null);
   const progressFillRef = useRef(null);
+  const percentRef = useRef(null);
   const readyRef = useRef(null);
   const sweepRef = useRef(null);
+  const hudRef = useRef(null);
 
   useEffect(() => {
     if (!overlayRef.current) return;
@@ -46,8 +47,11 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
       tl.set(progressFillRef.current, { scaleX: 0 });
       tl.set(readyRef.current, { opacity: 0, scale: 0.9 });
       tl.set(sweepRef.current, { yPercent: -20 });
+      tl.set(hudRef.current, { opacity: 0, scale: 0.95 });
+      tl.set(percentRef.current, { textContent: "0" });
 
       tl.to(overlayRef.current, { opacity: 1, duration: 0.6, ease: "power2.out" });
+      tl.to(hudRef.current, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 0.2);
       tl.fromTo(
         modelWrapRef.current,
         { scale: 0.92, opacity: 0.3 },
@@ -63,7 +67,11 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
         if (i > 0) tl.to(stepsRef.current[i - 1], { opacity: 0.45 }, pos - 0.05);
       });
 
-      // Progress bar fill (smooth over 2s)
+      // Progress bar fill + percentage counter (2s)
+      const proxy = { value: 0 };
+      tl.to(proxy, { value: 100, duration: 2, ease: "power2.inOut", onUpdate: () => {
+        if (percentRef.current) percentRef.current.textContent = String(Math.round(proxy.value));
+      } }, 1.2);
       tl.to(progressFillRef.current, { scaleX: 1, duration: 2, ease: "power2.inOut" }, 1.2);
 
       // Sweep line animation (continuous feel)
@@ -98,7 +106,7 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
           className="w-full h-full"
         >
           <Suspense fallback={null}>
-            <HeartModelSceneCinematic />
+            <BrainModelSceneCinematic />
           </Suspense>
         </Canvas>
       </div>
@@ -129,41 +137,52 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
       {/* Scan line */}
       <div className="absolute inset-0 pointer-events-none scan-line opacity-40" aria-hidden />
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-md px-6 flex flex-col items-center">
-        <p className="font-mono text-[10px] text-[var(--color-primary)]/80 tracking-[0.2em] uppercase mb-8">
-          VitalTwin · Generating report
+      {/* Letterbox bars - cinematic */}
+      <div className="absolute left-0 right-0 top-0 h-[6vh] bg-black/70 pointer-events-none z-10" aria-hidden />
+      <div className="absolute left-0 right-0 bottom-0 h-[6vh] bg-black/70 pointer-events-none z-10" aria-hidden />
+
+      {/* HUD-style content with corner brackets */}
+      <div
+        ref={hudRef}
+        className="relative z-20 w-full max-w-lg mx-6 game-hud-frame rounded-sm border border-[var(--color-primary)]/40 bg-[var(--color-bg)]/60 backdrop-blur-sm px-8 py-10"
+      >
+        <p className="font-mono text-[10px] text-[var(--color-primary)]/90 tracking-[0.25em] uppercase mb-6">
+          [ MISSION: GENERATE REPORT ]
         </p>
 
-        <div className="w-full space-y-3 mb-10">
+        <div className="w-full space-y-2.5 mb-8">
           {STEPS.map((label, i) => (
             <p
               key={i}
               ref={(el) => { stepsRef.current[i] = el; }}
               className="font-mono text-sm text-[var(--color-primary)]/90 tracking-wide"
             >
+              <span className="text-[var(--color-muted)]/80 mr-2">[{i + 1}]</span>
               {label}
             </p>
           ))}
         </div>
 
-        {/* Progress bar */}
-        <div ref={progressRef} className="w-full h-1 rounded-full bg-[var(--color-surface)]/80 overflow-hidden mb-2">
-          <div
-            ref={progressFillRef}
-            className="h-full rounded-full bg-[var(--color-primary)] origin-left"
-            style={{ width: "100%" }}
-          />
+        <div className="flex items-center gap-4 mb-2">
+          <div className="flex-1 h-1.5 rounded-sm bg-[var(--color-surface)]/90 overflow-hidden border border-[var(--color-surface-border)]/50">
+            <div
+              ref={progressFillRef}
+              className="h-full rounded-sm bg-[var(--color-primary)] origin-left"
+              style={{ width: "100%" }}
+            />
+          </div>
+          <span ref={percentRef} className="font-mono text-sm tabular-nums text-[var(--color-primary)] w-10 text-right">0</span>
+          <span className="font-mono text-[10px] text-[var(--color-muted)] uppercase">%</span>
         </div>
-        <p className="font-mono text-[10px] text-[var(--color-muted)] uppercase tracking-wider mb-12">
-          Analysis in progress
+        <p className="font-mono text-[10px] text-[var(--color-muted)] uppercase tracking-wider mb-10">
+          System analysis in progress
         </p>
 
         <p
           ref={readyRef}
           className="font-heading text-xl font-semibold tracking-tight text-[var(--color-primary)] text-glow"
         >
-          Report ready.
+          [ REPORT READY ]
         </p>
       </div>
     </div>
