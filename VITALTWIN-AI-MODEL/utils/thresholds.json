@@ -1,0 +1,39 @@
+{
+  "liver": {
+    "thresholds": {
+      "ast": 46.7,
+      "alt": 74.3,
+      "ggt": 66.8,
+      "bmi": 31.6,
+      "glucose": 107.1
+    },
+    "weights": {
+      "ast": 0.25,
+      "alt": 0.35,
+      "ggt": 0.25,
+      "bmi": 0.2,
+      "glucose": 0.15
+    },
+    "messages": {
+      "green": "✅ Liver enzymes normal. Low risk of fatty liver.",
+      "yellow": "⚠️ Moderate risk of NAFLD. Consider lifestyle changes.",
+      "red": "🔴 High risk of liver disease. Consult hepatologist."
+    }
+  },
+  "heart": {
+    "thresholds": {
+      "systolic_bp": 140,
+      "diastolic_bp": 90,
+      "bmi": 30,
+      "age": 45,
+      "glucose": 110
+    },
+    "weights": {
+      "systolic_bp": 0.25,
+      "diastolic_bp": 0.2,
+      "bmi": 0.2,
+      "age": 0.2,
+      "glucose": 0.15
+    }
+  }
+}

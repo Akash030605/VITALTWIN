@@ -1,0 +1,23 @@
+{
+  "paths": {
+    "cardio_data": "data/cardio_dataset.csv",
+    "liver_data": "data/liver_dataset.csv",
+    "nhanes_data": "data/nhanes_liver_data.csv",
+    "models_dir": "models/trained_models/"
+  },
+  "risk_levels": {
+    "GREEN": 0.3,
+    "YELLOW": 0.7,
+    "RED": 1.0
+  },
+  "biological_age": {
+    "red_risk_years": 5,
+    "yellow_risk_years": 2,
+    "smoking_years": 4,
+    "poor_sleep_years": 3,
+    "high_stress_years": 2,
+    "sedentary_years": 2,
+    "active_discount": 2,
+    "good_diet_discount": 1
+  }
+}
