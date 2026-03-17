@@ -7,6 +7,7 @@ import AppHeader from "../../components/layout/AppHeader";
 import DashboardBackground from "../../components/ui/DashboardBackground";
 import DashboardLayout from "../../components/results/DashboardLayout";
 import OrganSection from "../../components/results/OrganSection";
+import YourInputsSummary from "../../components/results/YourInputsSummary";
 
 const RISK_ORDER = { RED: 0, YELLOW: 1, GREEN: 2 };
 const ORGAN_IDS = ["heart", "brain", "liver", "kidney", "lungs"];
@@ -22,6 +23,8 @@ function sortOrgansByDegradation(organs) {
 
 export default function OrgansPage() {
   const result = useStore((s) => s.result);
+  const profile = useStore((s) => s.profile);
+  const input = useStore((s) => s.input);
   const contentRef = useRef(null);
   const organOrder = useMemo(() => sortOrgansByDegradation(result?.organs), [result?.organs]);
 
@@ -39,7 +42,8 @@ export default function OrgansPage() {
           <DashboardLayout>
             <div ref={contentRef}>
               <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-1 text-glow-primary">Organs</h1>
-              <p className="text-[var(--color-muted)] mb-10">Organ health and risk. Shown by risk level (highest first).</p>
+              <p className="text-[var(--color-muted)] mb-4">Organ health and risk. Shown by risk level (highest first).</p>
+              <YourInputsSummary profile={profile} input={input} />
               <div className="space-y-8">
                 {organOrder.map((organId) => (
                   <OrganSection key={organId} organId={organId} organData={result?.organs?.[organId]} />
