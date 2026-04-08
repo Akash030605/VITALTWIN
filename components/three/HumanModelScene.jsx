@@ -31,7 +31,7 @@ export default function HumanModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
       <directionalLight position={[-3, 5, -3]} intensity={0.4} />
       <HumanMesh />
-      <OrbitControls enableZoom minDistance={5} maxDistance={14} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

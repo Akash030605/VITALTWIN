@@ -29,7 +29,7 @@ export default function LiverModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 2]} intensity={0.5} color="#2dd4bf" />
       <LiverMesh />
-      <OrbitControls enableZoom minDistance={10} maxDistance={10} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

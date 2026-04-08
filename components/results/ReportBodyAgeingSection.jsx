@@ -82,10 +82,10 @@ export default function ReportBodyAgeingSection({ result, gender }) {
             <div className="flex-1 min-h-[280px]">
               <BodyModelView gender={gender} ageingLevel={ageingLevel} className="w-full h-full min-h-[280px]" showScanRing />
             </div>
-            <div className="shrink-0 border-t border-white/10 p-4">
+            <div className="shrink-0 border-t border-slate-200 p-4 bg-slate-50/60 rounded-b-xl">
               <div className="flex items-center justify-between gap-3 mb-2">
-                <span className="text-xs font-medium text-[var(--color-primary)] uppercase tracking-wider">Years ahead</span>
-                <span className="text-lg font-semibold text-[var(--color-primary)] tabular-nums">{yearAhead.toFixed(1)}</span>
+                <span className="text-xs font-medium text-(--color-primary) uppercase tracking-wider">Years ahead</span>
+                <span className="text-lg font-semibold text-(--color-primary) tabular-nums">{yearAhead.toFixed(1)}</span>
               </div>
               <input
                 type="range"
@@ -93,19 +93,19 @@ export default function ReportBodyAgeingSection({ result, gender }) {
                 max={100}
                 value={ageingLevel * 100}
                 onChange={(e) => setAgeingLevel(Number(e.target.value) / 100)}
-                className="w-full h-2.5 rounded-full appearance-none bg-white/10 accent-[var(--color-primary)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-primary)] [&::-webkit-slider-thumb]:cursor-pointer"
+                className="w-full h-2.5 rounded-full appearance-none bg-slate-200 accent-(--color-primary) [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-(--color-primary) [&::-webkit-slider-thumb]:cursor-pointer"
                 aria-label="Preview years ahead"
               />
             </div>
           </div>
-          <p className="text-xs font-mono text-[var(--color-primary)]/60 uppercase tracking-wider px-1 shrink-0">Body ageing · Clinical preview</p>
+          <p className="text-xs text-(--color-muted) uppercase tracking-wider px-1 shrink-0">Biological Age Model</p>
         </div>
 
         {/* Right: Title, then Biological age, then Future self — same height as left (same as first section) */}
         <div className="min-w-0 flex flex-col gap-6 min-h-[380px] lg:min-h-0">
           <div className="shrink-0">
-            <h2 id="body-ageing-heading" className="text-xl md:text-2xl font-semibold text-[var(--foreground)] mb-1 text-glow-primary">Body Ageing</h2>
-            <p className="text-sm text-[var(--color-muted)]">Objective comparison of calendar age vs biological age, based on your current assessment data.</p>
+            <h2 id="body-ageing-heading" className="text-xl md:text-2xl font-semibold text-(--foreground) mb-1">Body Ageing</h2>
+            <p className="text-sm text-(--color-muted)">Objective comparison of calendar age vs biological age, based on your current assessment data.</p>
           </div>
           <div className="shrink-0">
             <BiologicalAgeCard biological_age={previewBiologicalAge} />

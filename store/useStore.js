@@ -45,6 +45,7 @@ const INITIAL_INPUT = {
   sleep: "",
   stress: "",
   medical_conditions: [],
+  medications: [],
 };
 
 const INITIAL_PROFILE = {

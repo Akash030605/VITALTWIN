@@ -21,6 +21,12 @@ function sortOrgansByDegradation(organs) {
   });
 }
 
+const RISK_SUMMARY_CONFIG = {
+  RED:    { text: "Critical",  color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200",     dot: "bg-red-500" },
+  YELLOW: { text: "Warning",   color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200",   dot: "bg-amber-400" },
+  GREEN:  { text: "Normal",    color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" },
+};
+
 export default function OrgansPage() {
   const result = useStore((s) => s.result);
   const profile = useStore((s) => s.profile);
@@ -32,30 +38,61 @@ export default function OrgansPage() {
     if (contentRef.current) gsap.fromTo(contentRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
   }, [result]);
 
+  // Count organs by risk
+  const organs = result?.organs ?? {};
+  const riskCounts = { RED: 0, YELLOW: 0, GREEN: 0 };
+  Object.values(organs).forEach((o) => {
+    const r = o?.risk_level ?? "GREEN";
+    if (riskCounts[r] !== undefined) riskCounts[r]++;
+  });
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-(--color-bg) flex flex-col">
       <DashboardBackground />
       <AppHeader />
 
-      <main className="flex-1 py-10 px-4 md:px-6 overflow-y-auto relative">
+      <main className="flex-1 py-8 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <DashboardLayout>
             <div ref={contentRef}>
-              <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-1 text-glow-primary">Organs</h1>
-              <p className="text-[var(--color-muted)] mb-4">Organ health and risk. Shown by risk level (highest first).</p>
-              <YourInputsSummary profile={profile} input={input} />
-              <div className="space-y-8">
+
+              {/* Page header */}
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-slate-900 mb-1.5">Organ Health</h1>
+                <p className="text-(--color-muted) text-sm mb-5">Detailed analysis of each organ. Shown by risk level — highest risk first.</p>
+
+                {/* Risk summary pills */}
+                {Object.keys(organs).length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {Object.entries(riskCounts).filter(([, count]) => count > 0).map(([risk, count]) => {
+                      const cfg = RISK_SUMMARY_CONFIG[risk];
+                      return (
+                        <div key={risk} className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 border text-xs font-semibold ${cfg.bg} ${cfg.border} ${cfg.color}`}>
+                          <div className={`w-2 h-2 rounded-full ${cfg.dot}`} aria-hidden />
+                          {count} {cfg.text}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <YourInputsSummary profile={profile} input={input} />
+              </div>
+
+              {/* Organ detail sections */}
+              <div className="space-y-6">
                 {organOrder.map((organId) => (
                   <OrganSection key={organId} organId={organId} organData={result?.organs?.[organId]} />
                 ))}
               </div>
+
             </div>
           </DashboardLayout>
         </div>
       </main>
 
-      <footer className="h-12 flex items-center justify-center border-t border-white/10">
-        <span className="text-xs text-[var(--color-muted)]">VitalTwin · Healthcare forensics</span>
+      <footer className="h-12 flex items-center justify-center border-t border-slate-200">
+        <span className="text-xs text-(--color-muted)">VitalTwin · Intelligent Health Analysis</span>
       </footer>
     </div>
   );

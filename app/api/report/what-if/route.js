@@ -28,11 +28,21 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-/** Call OpenRouter to generate what-if message, years_gained, points_gained, recommendations from full context. */
+/** Call Groq (or OpenRouter fallback) to generate what-if scenario results. */
 async function whatIfWithOpenRouter(profile, input, currentReport, scenarioId, changes) {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
+  // Prefer Groq; fall back to OpenRouter if only that key is set
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+  const orKey = process.env.OPENROUTER_API_KEY?.trim();
+  const apiKey = groqKey || orKey;
   if (!apiKey) return null;
-  const model = process.env.OPENROUTER_WHATIF_MODEL?.trim() || "google/gemini-2.0-flash-exp";
+
+  const useGroq = !!groqKey;
+  const apiUrl = useGroq
+    ? "https://api.groq.com/openai/v1/chat/completions"
+    : "https://openrouter.ai/api/v1/chat/completions";
+  const model = useGroq
+    ? (process.env.GROQ_WHATIF_MODEL?.trim() || "llama-3.3-70b-versatile")
+    : (process.env.OPENROUTER_WHATIF_MODEL?.trim() || "google/gemini-2.0-flash-exp");
 
   const scenarioName = SCENARIO_NAMES[scenarioId] || scenarioId;
   const currentBio = typeof currentReport?.biological_age === "object"
@@ -68,13 +78,12 @@ ${JSON.stringify(changes, null, 2)}
 Return only the JSON object with keys: message, years_gained, points_gained, recommendations.`;
 
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` };
+    if (!useGroq) headers["HTTP-Referer"] = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    const res = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-      },
+      headers,
       body: JSON.stringify({
         model,
         messages: [
@@ -82,15 +91,16 @@ Return only the JSON object with keys: message, years_gained, points_gained, rec
           { role: "user", content: userContent },
         ],
         temperature: 0.3,
+        max_tokens: 512,
       }),
     });
     if (!res.ok) {
       const errText = await res.text();
-      throw new Error(errText || `OpenRouter ${res.status}`);
+      throw new Error(errText || `AI API ${res.status}`);
     }
     const data = await res.json();
     const raw = data?.choices?.[0]?.message?.content?.trim();
-    if (!raw) throw new Error("Empty OpenRouter response");
+    if (!raw) throw new Error("Empty AI response");
     let parsed;
     try {
       parsed = JSON.parse(raw);
@@ -122,7 +132,7 @@ Return only the JSON object with keys: message, years_gained, points_gained, rec
       scenario_recommendations: recommendations,
     };
   } catch (e) {
-    console.error("OpenRouter what-if error:", e?.message || e);
+    console.error("What-if AI error:", e?.message || e);
     return null;
   }
 }
@@ -168,9 +178,9 @@ export async function POST(request) {
   if (!target) {
     return NextResponse.json(
       {
-        message: process.env.OPENROUTER_API_KEY
-          ? "What-if failed (OpenRouter error or missing current_report). Ensure you have a report and OPENROUTER_API_KEY set."
-          : "Report API not configured. Set REPORT_API_URL or OPENROUTER_API_KEY (with current_report) for what-if.",
+        message: (process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY)
+          ? "What-if failed (AI error or missing current_report). Ensure you have a report and GROQ_API_KEY set."
+          : "Report API not configured. Set REPORT_API_URL or GROQ_API_KEY (with current_report) for what-if.",
       },
       { status: 503, headers: CORS_HEADERS }
     );

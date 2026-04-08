@@ -70,11 +70,11 @@ export default function ProfileForm() {
   return (
     <div className="max-w-lg space-y-8">
       <div className="space-y-2">
-        <h2 className="font-heading text-sm font-medium text-[var(--color-primary)] tracking-[0.1em] uppercase">
-          Subject Profile
+        <h2 className="font-heading text-sm font-medium text-(--color-primary) tracking-[0.1em] uppercase">
+          Your Profile
         </h2>
-        <p className="font-heading text-sm text-[var(--color-muted)] leading-relaxed">
-          Enter your vitals and baseline data to initialize your digital twin for forensic analysis.
+        <p className="font-heading text-sm text-(--color-muted) leading-relaxed">
+          Enter your vitals and baseline data so we can build your personal health profile.
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export default function ProfileForm() {
         <div className="space-y-5">
           {FIELDS.map(({ id, label, type, placeholder, options, required }) => (
             <div key={id} data-field className="space-y-2">
-              <label htmlFor={id} className="block text-sm font-medium text-[var(--foreground)]">
+              <label htmlFor={id} className="block text-sm font-medium text-(--foreground)">
                 {label}{required ? " *" : ""}
               </label>
               {type === "select" ? (
@@ -90,7 +90,7 @@ export default function ProfileForm() {
                   id={id}
                   value={profile[id] ?? ""}
                   onChange={(e) => { setProfile(id, e.target.value); setFieldErrors((prev) => ({ ...prev, [id]: null })); }}
-                  className={`form-select w-full rounded-lg border px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 ${fieldErrors[id] ? "border-red-400/60 bg-red-950/20" : "border-white/10 bg-white/5 focus:border-[var(--color-primary)]/60"}`}
+                  className={`form-select w-full rounded-lg border px-4 py-3 text-sm text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/15 ${fieldErrors[id] ? "border-red-300 bg-red-50" : "border-slate-200 bg-white focus:border-(--color-primary)"}`}
                   aria-invalid={!!fieldErrors[id]}
                   aria-describedby={fieldErrors[id] ? `${id}-error` : undefined}
                 >
@@ -106,13 +106,13 @@ export default function ProfileForm() {
                   placeholder={placeholder}
                   value={profile[id] ?? ""}
                   onChange={(e) => { setProfile(id, e.target.value); setFieldErrors((prev) => ({ ...prev, [id]: null })); }}
-                  className={`w-full rounded-lg border px-4 py-3 text-sm text-[var(--foreground)] placeholder:text-[var(--color-muted)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 ${fieldErrors[id] ? "border-red-400/60 bg-red-950/20" : "border-white/10 bg-white/5 focus:border-[var(--color-primary)]/60"}`}
+                  className={`w-full rounded-lg border px-4 py-3 text-sm text-(--foreground) placeholder:text-(--color-muted-dim) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/15 ${fieldErrors[id] ? "border-red-300 bg-red-50" : "border-slate-200 bg-white focus:border-(--color-primary)"}`}
                   aria-invalid={!!fieldErrors[id]}
                   aria-describedby={fieldErrors[id] ? `${id}-error` : undefined}
                 />
               )}
               {fieldErrors[id] && (
-                <p id={`${id}-error`} className="text-xs text-red-400" role="alert">{fieldErrors[id]}</p>
+                <p id={`${id}-error`} className="text-xs text-red-600" role="alert">{fieldErrors[id]}</p>
               )}
             </div>
           ))}
@@ -126,9 +126,10 @@ export default function ProfileForm() {
             type="button"
             onClick={handleContinue}
             data-cta
-            className="landing-cta font-heading w-full flex items-center justify-center rounded-sm border border-[var(--color-primary)]/60 bg-[var(--color-primary)]/10 px-8 py-4 text-sm font-medium uppercase tracking-wider text-[var(--color-primary)] transition-all hover:bg-[var(--color-primary)]/20 hover:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg)]"
+            className="font-heading w-full flex items-center justify-center gap-2 rounded-xl bg-(--color-primary) px-8 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-(--color-primary-deep) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-2 focus:ring-offset-white"
           >
-            [ Continue to Health Assessment ]
+            Continue to Health Assessment
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
           </button>
         </div>
       </form>

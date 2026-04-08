@@ -20,7 +20,7 @@ const SCENES = {
 
 export default function OrganModelView({ organId, className = "", style }) {
   const Scene = organId ? SCENES[organId] : null;
-  if (!Scene) return <div className={`bg-[var(--color-surface)]/50 flex items-center justify-center ${className}`}><span className="text-[var(--color-muted)] text-sm">No model</span></div>;
+  if (!Scene) return <div className={`bg-(--color-surface)/50 flex items-center justify-center ${className}`}><span className="text-(--color-muted) text-sm">No model</span></div>;
 
   return (
     <div className={`overflow-hidden w-full h-full min-h-[280px] ${className}`} style={style}>

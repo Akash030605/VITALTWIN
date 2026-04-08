@@ -104,27 +104,27 @@ const ORGAN_POSSIBLE_ISSUES = {
 const DEGRADE_STYLES = {
   RED: {
     status: "Critical",
-    border: "border-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.15)]",
-    overlay: "bg-red-950/50",
-    label: "text-red-300 font-semibold",
+    border: "border-red-300 shadow-[0_2px_12px_rgba(239,68,68,0.10)]",
+    overlay: "bg-red-50",
+    label: "text-red-600 font-semibold",
     bar: "bg-red-500",
-    badge: "bg-red-500/20 text-red-300 border border-red-500/50",
+    badge: "bg-red-100 text-red-600 border border-red-200",
   },
   YELLOW: {
     status: "Warning",
-    border: "border-amber-400/60 shadow-[0_0_16px_rgba(251,191,36,0.12)]",
-    overlay: "bg-amber-950/35",
-    label: "text-amber-300 font-semibold",
+    border: "border-amber-300 shadow-[0_2px_12px_rgba(251,191,36,0.08)]",
+    overlay: "bg-amber-50",
+    label: "text-amber-600 font-semibold",
     bar: "bg-amber-400",
-    badge: "bg-amber-500/20 text-amber-300 border border-amber-400/50",
+    badge: "bg-amber-100 text-amber-700 border border-amber-200",
   },
   GREEN: {
     status: "Normal",
-    border: "border-emerald-400/50 shadow-[0_0_12px_rgba(52,211,153,0.1)]",
-    overlay: "bg-emerald-950/20",
-    label: "text-emerald-300 font-semibold",
-    bar: "bg-emerald-400",
-    badge: "bg-emerald-500/15 text-emerald-300 border border-emerald-400/40",
+    border: "border-emerald-200 shadow-[0_2px_8px_rgba(16,185,129,0.08)]",
+    overlay: "bg-emerald-50",
+    label: "text-emerald-600 font-semibold",
+    bar: "bg-emerald-500",
+    badge: "bg-emerald-100 text-emerald-700 border border-emerald-200",
   },
 };
 
@@ -139,7 +139,7 @@ export default function OrganSection({ organId, organData }) {
   const { health_score, current_risk, metrics, risk_progression, recommendations, score_reason, factors } = organData;
   const hasReasons = (score_reason && typeof score_reason === "string") || (Array.isArray(factors) && factors.length > 0);
   const factorImpactClass = (impact) =>
-    impact === "positive" ? "text-emerald-300" : impact === "negative" ? "text-red-300" : "text-[var(--color-muted)]";
+    impact === "positive" ? "text-emerald-600" : impact === "negative" ? "text-red-600" : "text-(--color-muted)";
 
   const possibleIssues = ORGAN_POSSIBLE_ISSUES[organId]?.[riskLevel] ?? ORGAN_POSSIBLE_ISSUES[organId]?.GREEN ?? [];
 
@@ -158,28 +158,28 @@ export default function OrganSection({ organId, organData }) {
             <span className={`text-[10px] uppercase tracking-wider font-medium px-2 py-1 rounded ${style.badge}`}>{style.status}</span>
           </div>
         </div>
-        <div className="flex-1 p-6 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-white/10">
-          <p className="text-2xl font-semibold text-[var(--foreground)] mb-1">{health_score} <span className="text-base font-normal text-[var(--color-muted)]">/ 100</span></p>
+        <div className="flex-1 p-6 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-slate-200">
+          <p className="text-2xl font-semibold text-(--foreground) mb-1">{health_score} <span className="text-base font-normal text-(--color-muted)">/ 100</span></p>
           <p className={`text-sm mb-2 ${style.label}`}>Risk {(current_risk * 100).toFixed(0)}%</p>
           <div
             className="relative mb-3"
             onMouseEnter={() => setBarHover(true)}
             onMouseLeave={() => setBarHover(false)}
           >
-            <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden cursor-help" title="Hover for possible issues">
+            <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden cursor-help" title="Hover for possible issues">
               <div className={`h-full ${style.bar} transition-all`} style={{ width: `${Math.min(100, current_risk * 100)}%` }} />
             </div>
             {barHover && possibleIssues.length > 0 && (
               <div
-                className="absolute left-0 right-0 top-full mt-2 z-20 rounded-lg border border-white/20 bg-[var(--color-surface)] shadow-xl p-3"
+                className="absolute left-0 right-0 top-full mt-2 z-20 rounded-lg border border-slate-200 bg-white shadow-lg p-3"
                 role="tooltip"
                 aria-live="polite"
               >
-                <p className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-wider mb-2">Possible issues at this score</p>
-                <ul className="space-y-1.5 text-xs text-[var(--foreground)]">
+                <p className="text-xs font-semibold text-(--color-primary) uppercase tracking-wider mb-2">Possible issues at this score</p>
+                <ul className="space-y-1.5 text-xs text-(--foreground)">
                   {possibleIssues.map((issue, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-[var(--color-primary)] shrink-0 mt-0.5">•</span>
+                      <span className="text-(--color-primary) shrink-0 mt-0.5">•</span>
                       <span>{issue}</span>
                     </li>
                   ))}
@@ -188,20 +188,20 @@ export default function OrganSection({ organId, organData }) {
             )}
           </div>
           {risk_progression && (
-            <p className="text-xs text-[var(--color-muted)] mb-2">
+            <p className="text-xs text-(--color-muted) mb-2">
               Risk over time: 1y {(risk_progression.year_1 * 100).toFixed(0)}% · 3y {(risk_progression.year_3 * 100).toFixed(0)}% · 5y {(risk_progression.year_5 * 100).toFixed(0)}% · 10y {(risk_progression.year_10 * 100).toFixed(0)}%
             </p>
           )}
           {metrics && Object.keys(metrics).length > 0 && (
-            <p className="text-xs text-[var(--color-muted)] mb-2">
+            <p className="text-xs text-(--color-muted) mb-2">
               {Object.entries(metrics).map(([k, v]) => `${k.replace(/_/g, " ")}: ${(Number(v) * 100).toFixed(0)}%`).join(" · ")}
             </p>
           )}
           {hasReasons && (
-            <div className="mb-3 pt-2 border-t border-white/10">
-              <p className="text-xs font-medium text-[var(--color-primary)] uppercase tracking-wider mb-1.5">Why this score</p>
+            <div className="mb-3 pt-2 border-t border-slate-200">
+              <p className="text-xs font-medium text-(--color-primary) uppercase tracking-wider mb-1.5">Why this score</p>
               {score_reason && typeof score_reason === "string" && (
-                <p className="text-sm text-[var(--foreground)]/90 leading-relaxed">{score_reason}</p>
+                <p className="text-sm text-(--foreground)/90 leading-relaxed">{score_reason}</p>
               )}
               {!score_reason && Array.isArray(factors) && factors.length > 0 && (
                 <ul className="space-y-1 text-sm">
@@ -209,13 +209,13 @@ export default function OrganSection({ organId, organData }) {
                     <li key={i} className={`flex items-baseline gap-2 ${factorImpactClass(f.impact)}`}>
                       <span className="shrink-0 w-2 h-2 rounded-full bg-current opacity-80" aria-hidden />
                       <span>{f.factor}</span>
-                      {f.detail && <span className="text-[var(--color-muted)] text-xs">— {f.detail}</span>}
+                      {f.detail && <span className="text-(--color-muted) text-xs">— {f.detail}</span>}
                     </li>
                   ))}
                 </ul>
               )}
               {score_reason && Array.isArray(factors) && factors.length > 0 && (
-                <ul className="mt-2 space-y-1 text-sm text-[var(--color-muted)]">
+                <ul className="mt-2 space-y-1 text-sm text-(--color-muted)">
                   {factors.map((f, i) => (
                     <li key={i} className={`flex items-baseline gap-2 ${factorImpactClass(f.impact)}`}>
                       <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-current opacity-70" aria-hidden />
@@ -227,7 +227,7 @@ export default function OrganSection({ organId, organData }) {
             </div>
           )}
           {recommendations?.length > 0 && (
-            <p className="text-sm text-[var(--foreground)]">{recommendations[0]}</p>
+            <p className="text-sm text-(--foreground)">{recommendations[0]}</p>
           )}
         </div>
       </div>

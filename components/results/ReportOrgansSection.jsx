@@ -23,8 +23,8 @@ export default function ReportOrgansSection({ result }) {
 
   return (
     <section className="mb-8" id="organs" aria-labelledby="organs-heading">
-      <h2 id="organs-heading" className="text-xs font-medium text-[var(--color-primary)] uppercase tracking-wider mb-2">Organs</h2>
-      <p className="text-sm text-[var(--color-muted)] mb-6">Organ health and risk. Shown by risk level (highest first).</p>
+      <h2 id="organs-heading" className="text-xs font-medium text-(--color-primary) uppercase tracking-wider mb-2">Organs</h2>
+      <p className="text-sm text-(--color-muted) mb-6">Organ health and risk. Shown by risk level (highest first).</p>
       <div className="space-y-6">
         {organOrder.map((organId) => (
           <OrganSection key={organId} organId={organId} organData={organs[organId]} />

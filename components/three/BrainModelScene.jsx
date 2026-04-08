@@ -29,7 +29,7 @@ export default function BrainModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.1} />
       <pointLight position={[0, 2, 3]} intensity={0.7} color="#2dd4bf" />
       <BrainMesh />
-      <OrbitControls enableZoom minDistance={4} maxDistance={10} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

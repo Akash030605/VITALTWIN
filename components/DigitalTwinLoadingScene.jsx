@@ -81,7 +81,7 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
 
       // "Ready" reveal
       tl.to(readyRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.2)" }, 3.4);
-      tl.to(readyRef.current, { textShadow: "0 0 30px rgba(20,184,166,0.6)", duration: 0.3 }, 3.9);
+      tl.to(readyRef.current, { textShadow: "0 0 24px rgba(5,150,105,0.5)", duration: 0.3 }, 3.9);
 
       // Hold then exit
       tl.to({}, { duration: 1.2 }, 4.2);
@@ -93,7 +93,7 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-bg)] overflow-hidden"
+      className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-(--color-bg) overflow-hidden"
       aria-live="polite"
       aria-label="Loading digital twin report"
     >
@@ -113,78 +113,84 @@ export default function DigitalTwinLoadingScene({ onComplete }) {
         </Canvas>
       </div>
 
-      {/* Dark overlay so text is readable */}
+      {/* Light overlay — keeps 3D model visible while ensuring text readability */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, rgba(8,10,13,0.7) 0%, rgba(8,10,13,0.85) 50%, rgba(8,10,13,0.95) 100%)",
+          background: "linear-gradient(180deg, rgba(240,247,255,0.75) 0%, rgba(240,247,255,0.88) 50%, rgba(240,247,255,0.95) 100%)",
         }}
       />
-      {/* Vignette */}
+      {/* Soft edge vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 50%, rgba(0,0,0,0.6) 100%)",
+          background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 50%, rgba(5,150,105,0.06) 100%)",
         }}
       />
-      {/* Scan sweep */}
+      {/* Scan sweep — sky blue */}
       <div
         ref={sweepRef}
-        className="absolute left-0 right-0 h-[2px] pointer-events-none z-10"
+        className="absolute left-0 right-0 h-0.5 pointer-events-none z-10"
         style={{
-          background: "linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.6) 50%, transparent 100%)",
-          boxShadow: "0 0 20px rgba(20,184,166,0.4)",
+          background: "linear-gradient(90deg, transparent 0%, rgba(5,150,105,0.7) 50%, transparent 100%)",
+          boxShadow: "0 0 16px rgba(5,150,105,0.35)",
         }}
       />
       {/* Scan line */}
-      <div className="absolute inset-0 pointer-events-none scan-line opacity-40" aria-hidden />
+      <div className="absolute inset-0 pointer-events-none scan-line opacity-30" aria-hidden />
 
-      {/* Letterbox bars - cinematic */}
-      <div className="absolute left-0 right-0 top-0 h-[6vh] bg-black/70 pointer-events-none z-10" aria-hidden />
-      <div className="absolute left-0 right-0 bottom-0 h-[6vh] bg-black/70 pointer-events-none z-10" aria-hidden />
+      {/* Letterbox bars */}
+      <div className="absolute left-0 right-0 top-0 h-[6vh] bg-emerald-50/80 pointer-events-none z-10 border-b border-emerald-100" aria-hidden />
+      <div className="absolute left-0 right-0 bottom-0 h-[6vh] bg-emerald-50/80 pointer-events-none z-10 border-t border-emerald-100" aria-hidden />
 
-      {/* HUD-style content with corner brackets */}
+      {/* Clinical analysis card */}
       <div
         ref={hudRef}
-        className="relative z-20 w-full max-w-lg mx-6 game-hud-frame rounded-sm border border-[var(--color-primary)]/40 bg-[var(--color-bg)]/60 backdrop-blur-sm px-8 py-10"
+        className="relative z-20 w-full max-w-lg mx-6 rounded-2xl border border-emerald-200 bg-white/90 backdrop-blur-sm px-8 py-10 shadow-xl shadow-emerald-100/60"
       >
-        <p className="font-mono text-[10px] text-[var(--color-primary)]/90 tracking-[0.25em] uppercase mb-6">
-          [ MISSION: GENERATE REPORT ]
-        </p>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 rounded-full bg-(--color-primary)/10 flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-(--color-primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Generating your health report</p>
+            <p className="text-xs text-(--color-muted)">AI analysis in progress — please wait</p>
+          </div>
+        </div>
 
         <div className="w-full space-y-2.5 mb-8">
           {STEPS.map((label, i) => (
-            <p
+            <div
               key={i}
               ref={(el) => { stepsRef.current[i] = el; }}
-              className="font-mono text-sm text-[var(--color-primary)]/90 tracking-wide"
+              className="flex items-center gap-2.5"
             >
-              <span className="text-[var(--color-muted)]/80 mr-2">[{i + 1}]</span>
-              {label}
-            </p>
+              <div className="w-1.5 h-1.5 rounded-full bg-(--color-primary) shrink-0" aria-hidden />
+              <p className="text-sm text-foreground/80">{label}</p>
+            </div>
           ))}
         </div>
 
         <div className="flex items-center gap-4 mb-2">
-          <div className="flex-1 h-1.5 rounded-sm bg-[var(--color-surface)]/90 overflow-hidden border border-[var(--color-surface-border)]/50">
+          <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
             <div
               ref={progressFillRef}
-              className="h-full rounded-sm bg-[var(--color-primary)] origin-left"
+              className="h-full rounded-full bg-(--color-primary) origin-left"
               style={{ width: "100%" }}
             />
           </div>
-          <span ref={percentRef} className="font-mono text-sm tabular-nums text-[var(--color-primary)] w-10 text-right">0</span>
-          <span className="font-mono text-[10px] text-[var(--color-muted)] uppercase">%</span>
+          <span ref={percentRef} className="font-mono text-sm tabular-nums text-(--color-primary) w-10 text-right">0</span>
+          <span className="text-xs text-(--color-muted)">%</span>
         </div>
-        <p className="font-mono text-[10px] text-[var(--color-muted)] uppercase tracking-wider mb-10">
-          System analysis in progress
+        <p className="text-xs text-(--color-muted) mb-10">
+          Analysing organ health, biological age, and risk factors…
         </p>
 
         <p
           ref={readyRef}
-          className="font-heading text-xl font-semibold tracking-tight text-[var(--color-primary)] text-glow"
+          className="font-heading text-xl font-semibold tracking-tight text-(--color-primary)"
         >
-          [ REPORT READY ]
+          Your report is ready
         </p>
       </div>
     </div>

@@ -29,7 +29,7 @@ export default function LungsModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 2]} intensity={0.5} color="#2dd4bf" />
       <LungsMesh />
-      <OrbitControls enableZoom minDistance={1} maxDistance={10} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

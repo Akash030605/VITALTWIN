@@ -29,7 +29,7 @@ export default function KidneyModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 2]} intensity={0.5} color="#2dd4bf" />
       <KidneyMesh />
-      <OrbitControls enableZoom minDistance={4} maxDistance={10} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

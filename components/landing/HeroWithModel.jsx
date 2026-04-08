@@ -7,9 +7,9 @@ import { gsap } from "gsap";
 const HumanModelView = dynamic(() => import("../HumanModelView"), { ssr: false });
 
 const TAGLINES = [
-  "Digital twin initialized.",
-  "Anatomical model loaded.",
-  "Your profile. Your prediction.",
+  "AI-powered health intelligence.",
+  "Comprehensive organ health analysis.",
+  "Evidence-based predictions for your body.",
 ];
 
 const PARALLAX_STRENGTH = 8;
@@ -86,11 +86,11 @@ export default function HeroWithModel({ onAnimationsReady }) {
 
       <div className="absolute top-8 left-6 right-6 md:left-8 md:right-0 pointer-events-none">
         <h1 ref={headlineRef} className="hero-headline gradient-text max-w-lg" style={{ pointerEvents: "auto" }}>
-          Your body. Decoded.
+          Know your health,<br />before it surprises you.
         </h1>
       </div>
 
-      <div className="absolute bottom-6 left-6 space-y-1 font-mono text-xs text-[var(--color-primary)]/90 tracking-wide pointer-events-none">
+      <div className="absolute bottom-6 left-6 space-y-1 font-mono text-xs text-(--color-primary)/90 tracking-wide pointer-events-none">
         {TAGLINES.map((text, i) => {
           const ref = [line1Ref, line2Ref, line3Ref][i];
           const isHovered = hoveredLine === i;
@@ -98,7 +98,7 @@ export default function HeroWithModel({ onAnimationsReady }) {
             <p
               key={i}
               ref={ref}
-              className={`cursor-default transition-all duration-200 ${i === 0 ? "text-[var(--color-primary)]" : i === 1 ? "text-[var(--color-primary)]/80" : "text-[var(--color-muted)] text-[11px]"} ${isHovered ? "text-glow opacity-100 scale-105" : ""}`}
+              className={`cursor-default transition-all duration-200 ${i === 0 ? "text-(--color-primary)" : i === 1 ? "text-(--color-primary)/80" : "text-(--color-muted) text-[11px]"} ${isHovered ? "text-glow opacity-100 scale-105" : ""}`}
               style={{ pointerEvents: "auto" }}
               onMouseEnter={() => setHoveredLine(i)}
               onMouseLeave={() => setHoveredLine(null)}

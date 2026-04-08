@@ -41,21 +41,6 @@ function getPredictUrl() {
   return `${base}${predictPath}`;
 }
 
-/** What-if path (default /what-if). */
-function getWhatIfPath() {
-  const p = process.env.REPORT_API_WHATIF_PATH?.trim();
-  return p ? (p.startsWith("/") ? p : `/${p}`) : "/what-if";
-}
-
-/** Full what-if URL. If REPORT_API_WHATIF_URL is set, use it; otherwise {base}{path}. */
-function getWhatIfUrl() {
-  const full = process.env.REPORT_API_WHATIF_URL?.trim();
-  if (full) return full.replace(/\/$/, "");
-  const base = getLlmBaseUrl();
-  if (!base) return null;
-  return `${base}${getWhatIfPath()}`;
-}
-
 /** Headers for LLM requests (ngrok may require ngrok-skip-browser-warning). */
 function llmHeaders() {
   const base = getLlmBaseUrl();
@@ -101,6 +86,7 @@ function toPredictPayload(profile = {}, input = {}) {
     Sleep: numOr(input.sleep, 7),
     Stress: strOr(input.stress, "Low"),
     MedicalConditions: Array.isArray(input.medical_conditions) ? input.medical_conditions.filter(Boolean) : [],
+    Medications: Array.isArray(input.medications) ? input.medications.filter(Boolean) : [],
     ...(Bmi != null && { Bmi }),
   };
 
@@ -125,10 +111,8 @@ export async function GET() {
 }
 
 /**
- * POST /api/report — sends { profile, input } to LLM:
- * 1) POST {base}/predict → report output
- * 2) POST {base}/what-if → what-if data for frontend
- * Merges what_if response into report as what_if_simulations.
+ * POST /api/report — sends { profile, input } to LLM backend /predict.
+ * Returns the normalized report object.
  */
 export async function POST(request) {
   const base = getLlmBaseUrl();
@@ -179,59 +163,6 @@ export async function POST(request) {
     // Normalize: also support { prediction }, { result }, or report at top level.
     let report = data?.data ?? data?.prediction ?? data?.result ?? data;
     if (typeof report !== "object" || report === null) report = {};
-
-    const whatIfUrl = getWhatIfUrl();
-    const whatIfPayload = {
-      user_data: { ProfileInfo: payload.ProfileInfo, HealthInfo: payload.HealthInfo },
-      changes: { additionalProp1: {} },
-    };
-    try {
-      if (!whatIfUrl) {
-        console.warn("[report] What-if skipped: no base URL (set REPORT_API_WHATIF_URL or use REPORT_API_URL with base)");
-      } else {
-        const whatIfRes = await fetch(whatIfUrl, {
-          method: "POST",
-          headers: llmHeaders(),
-          body: JSON.stringify(whatIfPayload),
-        });
-        const whatIfContentType = whatIfRes.headers.get("content-type") || "";
-        const whatIfIsJson = whatIfContentType.includes("application/json");
-        const whatIfData = whatIfIsJson ? await whatIfRes.json() : null;
-        if (whatIfRes.ok && whatIfData != null) {
-          const simData = whatIfData?.data ?? whatIfData?.scenarios ?? whatIfData;
-          const hasReportShape = simData && typeof simData === "object" && (simData.vital_score != null || simData.overall_health_score != null);
-          if (hasReportShape) {
-            const bio = simData.biological_age;
-            const score = simData.overall_health_score ?? simData.vital_score?.current ?? 0;
-            report.what_if_simulations = {
-              current: {
-                id: "current",
-                name: "Current lifestyle",
-                description: "Your current assessment based on the report.",
-                biological_age: report.biological_age?.biological_age ?? 0,
-                health_score: report.overall_health_score ?? report.vital_score?.current ?? 0,
-              },
-              scenarios: [
-                {
-                  id: "what-if",
-                  name: "What-if simulation",
-                  description: simData.vital_score?.message ?? "Simulated outcome from what-if analysis.",
-                  biological_age: typeof bio === "object" ? bio?.biological_age ?? 0 : (bio ?? 0),
-                  health_score: score,
-                },
-              ],
-              quick_wins: [],
-            };
-          } else {
-            report.what_if_simulations = simData;
-          }
-        } else {
-          console.warn("[report] What-if failed:", whatIfRes.status, whatIfUrl, whatIfData?.message || whatIfData?.detail || "");
-        }
-      }
-    } catch (err) {
-      console.warn("[report] What-if request error:", err?.message);
-    }
 
     return NextResponse.json(report, {
       status: 200,

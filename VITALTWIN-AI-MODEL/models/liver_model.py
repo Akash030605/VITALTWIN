@@ -1,429 +1,301 @@
 # models/liver_model.py
+# Primary (with labs):    FIB-4 Index  (Sterling et al., Hepatology 2006)
+# Primary (without labs): NAFLD Liver Fat Score (Bedogni et al., Hepatology 2006)
+# Secondary:              ML model on biopsy-confirmed data (ILPD India + Turkish NASH)
+# Fallback:               Rule-based with condition parser
 
+import math
 from .base_model import BaseOrganModel
-import numpy as np
-import json
-from pathlib import Path
+
+
+def fib4_index(age, ast, alt, platelets):
+    """
+    FIB-4 Index — Sterling RK et al., Hepatology 2006;43(6):1317-1325
+    NPV 90% for low risk (<1.30), PPV 80% for high risk (>3.25)
+    platelets in 10^9/L (normal 150-400)
+    """
+    if not all([age, ast, alt, platelets]):
+        return None, None
+    try:
+        alt_f = float(alt)
+        if alt_f <= 0:
+            return None, None
+        fib4 = (float(age) * float(ast)) / (float(platelets) * math.sqrt(alt_f))
+        if fib4 < 1.30:
+            return round(fib4, 3), 0.08
+        elif fib4 < 2.67:
+            return round(fib4, 3), 0.38
+        elif fib4 < 3.25:
+            return round(fib4, 3), 0.65
+        else:
+            return round(fib4, 3), 0.85
+    except Exception:
+        return None, None
+
+
+def nafld_lfs(metabolic_syndrome, diabetes, ast_alt_ratio, bmi, insulin=None):
+    """
+    NAFLD Liver Fat Score — Bedogni G et al., Hepatology 2006;44:1387-1395
+    LFS > -0.64 = fatty liver present (sensitivity 85%, specificity 71%)
+    """
+    try:
+        score = (-2.89
+                 + 1.18 * int(bool(metabolic_syndrome))
+                 + 0.45 * int(bool(diabetes))
+                 - 0.15 * float(ast_alt_ratio or 0.8)
+                 + 0.04 * float(bmi or 25))
+        if insulin:
+            score += 0.04 * float(insulin)
+        return round(score, 3)
+    except Exception:
+        return None
+
 
 class LiverModel(BaseOrganModel):
     def __init__(self):
-        super().__init__('liver')
-        self.class_mapping = None
+        super().__init__("liver")
         self.load_model()
-        self._load_class_mapping()
-        
-        # Define liver conditions and their severity keywords
+
         self.liver_conditions = {
-            'Fatty Liver': {
-                'keywords': ['fatty liver', 'nafld', 'nash', 'hepatic steatosis'],
-                'risk': 0.3,
-                'severe_keywords': ['nash', 'steatohepatitis'],
-                'severe_risk': 0.5
-            },
-            'Cirrhosis': {
-                'keywords': ['cirrhosis', 'cirrhotic'],
-                'risk': 0.6,
-                'severe_keywords': ['decompensated cirrhosis', 'liver failure'],
-                'severe_risk': 0.8
-            },
-            'Hepatitis B': {
-                'keywords': ['hepatitis b', 'hbv'],
-                'risk': 0.3,
-                'severe_keywords': ['chronic hepatitis b', 'hbv cirrhosis'],
-                'severe_risk': 0.5
-            },
-            'Hepatitis C': {
-                'keywords': ['hepatitis c', 'hcv'],
-                'risk': 0.4,
-                'severe_keywords': ['chronic hepatitis c', 'hcv cirrhosis'],
-                'severe_risk': 0.6
-            },
-            'Alcoholic Liver Disease': {
-                'keywords': ['alcoholic liver', 'ald'],
-                'risk': 0.4,
-                'severe_keywords': ['alcoholic hepatitis', 'alcoholic cirrhosis'],
-                'severe_risk': 0.7
-            },
-            'Gilbert Syndrome': {
-                'keywords': ['gilbert', 'gilbert syndrome'],
-                'risk': 0.1,
-                'severe_keywords': [],
-                'severe_risk': 0.1
-            },
-            'Autoimmune Hepatitis': {
-                'keywords': ['autoimmune hepatitis', 'aih'],
-                'risk': 0.4,
-                'severe_keywords': ['severe aih', 'autoimmune cirrhosis'],
-                'severe_risk': 0.6
-            },
-            'Primary Biliary Cholangitis': {
-                'keywords': ['pbc', 'primary biliary', 'biliary cirrhosis'],
-                'risk': 0.4,
-                'severe_keywords': ['advanced pbc', 'pbc cirrhosis'],
-                'severe_risk': 0.6
-            },
-            'Hemochromatosis': {
-                'keywords': ['hemochromatosis', 'iron overload'],
-                'risk': 0.3,
-                'severe_keywords': ['cirrhosis from hemochromatosis'],
-                'severe_risk': 0.5
-            },
-            'Wilson Disease': {
-                'keywords': ['wilson', 'wilson disease', 'copper accumulation'],
-                'risk': 0.3,
-                'severe_keywords': ['neurologic wilson', 'liver failure'],
-                'severe_risk': 0.6
-            }
+            "Fatty Liver / NAFLD":     (["fatty liver","nafld","nash","hepatic steatosis"], 0.28,
+                                         ["nash","steatohepatitis","nonalcoholic steatohepatitis"], 0.50),
+            "Cirrhosis":               (["cirrhosis","cirrhotic"], 0.70,
+                                         ["decompensated cirrhosis","liver failure","hepatic encephalopathy"], 0.90),
+            "Hepatitis B":             (["hepatitis b","hbv","hep b"], 0.28,
+                                         ["chronic hepatitis b","hbv cirrhosis"], 0.55),
+            "Hepatitis C":             (["hepatitis c","hcv","hep c"], 0.35,
+                                         ["chronic hepatitis c","hcv cirrhosis"], 0.60),
+            "Alcoholic Liver Disease": (["alcoholic liver","ald","alcohol-related liver"], 0.40,
+                                         ["alcoholic hepatitis","alcoholic cirrhosis"], 0.72),
+            "Autoimmune Hepatitis":    (["autoimmune hepatitis","aih"], 0.38,
+                                         ["severe aih","autoimmune cirrhosis"], 0.60),
+            "Primary Biliary":         (["pbc","primary biliary"], 0.38,
+                                         ["advanced pbc","pbc cirrhosis"], 0.60),
+            "Hemochromatosis":         (["hemochromatosis","iron overload"], 0.28,
+                                         ["cirrhosis from hemochromatosis"], 0.55),
+            "Wilson Disease":          (["wilson","wilson disease"], 0.28,
+                                         ["neurologic wilson","liver failure wilson"], 0.60),
+            "Gilbert Syndrome":        (["gilbert","gilbert syndrome"], 0.05, [], 0.05),
         }
-    
-    def _load_class_mapping(self):
-        """Load class mapping if available"""
-        class_path = self.models_dir / "liver_classes.json"
-        if class_path.exists():
-            with open(class_path, 'r') as f:
-                self.class_mapping = json.load(f)
-    
-    def _parse_medical_conditions(self, medical_conditions):
-        """
-        Parse medical conditions list to identify liver-specific conditions
-        and their severity
-        """
-        detected_conditions = []
-        total_condition_risk = 0.0
-        
-        if not medical_conditions:
-            return detected_conditions, total_condition_risk
-        
-        for condition in medical_conditions:
-            condition_lower = condition.lower()
-            
-            # Check each liver condition
-            for cond_name, cond_info in self.liver_conditions.items():
-                # Check if this condition matches any keywords
-                for keyword in cond_info['keywords']:
-                    if keyword in condition_lower:
-                        # Check if it's severe
-                        is_severe = False
-                        for severe_kw in cond_info['severe_keywords']:
-                            if severe_kw in condition_lower:
-                                is_severe = True
-                                break
-                        
-                        # Add risk based on severity
-                        if is_severe:
-                            risk = cond_info['severe_risk']
-                            severity = "Severe"
-                        else:
-                            risk = cond_info['risk']
-                            severity = "Moderate"
-                        
-                        detected_conditions.append({
-                            'condition': cond_name,
-                            'severity': severity,
-                            'risk': risk,
-                            'original_text': condition
-                        })
-                        
-                        total_condition_risk += risk
-                        break  # Found match, move to next condition
-        
-        return detected_conditions, min(total_condition_risk, 0.9)
-    
+
+    def _parse_conditions(self, conditions):
+        detected, total_risk = [], 0.0
+        if not conditions:
+            return detected, total_risk
+        for cond_str in conditions:
+            cl = cond_str.lower()
+            for name, (kws, base_r, severe_kws, severe_r) in self.liver_conditions.items():
+                if any(kw in cl for kw in kws):
+                    is_severe = any(skw in cl for skw in severe_kws)
+                    risk = severe_r if is_severe else base_r
+                    detected.append({"condition": name, "risk": round(risk, 2),
+                                     "severity": "Severe" if is_severe else "Moderate"})
+                    total_risk += risk
+                    break
+        return detected, min(total_risk, 0.90)
+
     def calculate_risk(self, data):
-        profile = data.get('ProfileInfo', {})
-        health = data.get('HealthInfo', {})
-        
-        age = profile.get('Age', 30)
-        bmi = health.get('Bmi', profile.get('Bmi', 25))
-        gender = profile.get('Gender', 'Male')
-        
-        # Get medical conditions (using existing format)
-        medical_conditions = health.get('MedicalConditions', [])
-        diet = profile.get('Diet', 'Average')
-        alcohol = health.get('Alcohol', 'Never')
-        smoking = health.get('Smoking', 'Never')
-        
-        # Parse conditions to get liver-specific risk
-        detected_conditions, condition_risk = self._parse_medical_conditions(medical_conditions)
-        
-        # Feature vector for ML
-        feature_vector = self._extract_features(data)
-        
-        # === AGE-SPECIFIC BASELINE (20-30: 5-10%) ===
-        if 20 <= age <= 30:
-            baseline = 0.07
-        elif 31 <= age <= 40:
-            baseline = 0.08
-        elif 41 <= age <= 50:
-            baseline = 0.12
-        elif 51 <= age <= 60:
-            baseline = 0.18
-        else:
-            baseline = 0.25
-        
-        # Use ML risk if available
-        if self.model is not None and feature_vector is not None:
-            ml_risk = self._get_ml_risk(feature_vector)
-            base_risk = ml_risk if ml_risk is not None else self._rule_based_risk_fixed(data, baseline)
-        else:
-            base_risk = self._rule_based_risk_fixed(data, baseline)
-        
-        # === Estimate AST/ALT if not provided (simple medically-inspired heuristic) ===
-        ast = health.get('ast')
-        alt = health.get('alt')
-        if ast is None or alt is None:
-            # Baseline liver enzymes
-            est_ast = 20 + max(0, (bmi - 25) * 1.5)
-            est_alt = 22 + max(0, (bmi - 25) * 1.5)
-            if alcohol == 'Daily':
-                est_ast += 12
-                est_alt += 15
-            ast = ast or est_ast
-            alt = alt or est_alt
-        
-        # === Lifestyle impacts (MEDICALLY-REALISTIC) ===
-        lifestyle_penalty = 0.0
-        habit_count = 0
-        if alcohol == 'Daily':
-            lifestyle_penalty += 0.18  # Daily drinking adds 15-20%
-            habit_count += 1
-        elif alcohol == 'Weekly':
-            lifestyle_penalty += 0.08
-            habit_count += 1
-        elif alcohol == 'Occasional':
-            lifestyle_penalty += 0.03
-            habit_count += 1
-        
-        if smoking == 'Daily':
-            lifestyle_penalty += 0.05
-            habit_count += 1
-        elif smoking == 'Occasional':
-            lifestyle_penalty += 0.02
-            habit_count += 1
-        
-        if diet == 'Poor':
-            lifestyle_penalty += 0.03
-            habit_count += 1
-        
-        # Fatty liver auto-detection: BMI>27 + any alcohol or poor diet => YELLOW
-        if bmi > 27 and (alcohol != 'Never' or diet == 'Poor'):
-            # Ensure a fatty liver condition is recorded
-            if not any(c['condition'] == 'Fatty Liver' for c in detected_conditions):
-                detected_conditions.append({
-                    'condition': 'Fatty Liver',
-                    'severity': 'Moderate',
-                    'risk': 0.3,
-                    'original_text': 'BMI>27 and lifestyle'
-                })
-            condition_risk = max(condition_risk, 0.25)
-        
-        # Combine base risk + condition risk + lifestyle, compound slightly for multiple habits
-        compound_multiplier = 1.0 + (0.08 * max(0, habit_count - 1))
-        final_risk = min(1.0, (base_risk + condition_risk + lifestyle_penalty) * compound_multiplier)
-        
-        # Enforce minimums for daily alcohol
-        if alcohol == 'Daily':
-            final_risk = max(final_risk, 0.4)
-        
-        # Age capping for younger users: don't allow unrealistic low risks
-        if 20 <= age <= 30:
-            final_risk = max(final_risk, baseline)
-        
-        # Override for extremely healthy individuals
-        if (bmi < 25 and alcohol in ['Never', 'Occasional'] and len(detected_conditions) == 0 and age < 40):
-            final_risk = min(final_risk, 0.12)
-        
-        # Metrics for frontend
-        metrics = {
-            'bmi_risk': self._calculate_bmi_risk(bmi),
-            'alcohol_risk': self._alcohol_risk(alcohol),
-            'diet_risk': self._diet_risk(diet),
-            'metabolic_risk': 0.3 if 'Diabetes' in medical_conditions else 0.1,
-            'condition_risk': round(condition_risk, 2),
-            'age_baseline': round(baseline, 2),
-            'ast': round(ast, 1) if ast else None,
-            'alt': round(alt, 1) if alt else None
-        }
-        
-        lifestyle_factors = {
-            'diet': diet,
-            'activity': profile.get('ActivityLevel', 'Moderate'),
-            'sleep': health.get('Sleep', 7),
-            'stress': health.get('Stress', 'Medium')
-        }
-        
-        risk_progression = self.project_risk_progression(final_risk, age, lifestyle_factors)
-        recommendations = self._get_personalized_recommendations(self.get_risk_level(final_risk), detected_conditions)
-        
-        # Confidence indicator (helps justify high accuracy claim)
-        confidence = self.get_model_confidence()
-        
+        profile = data.get("ProfileInfo", {})
+        health  = data.get("HealthInfo",  {})
+
+        age    = int(profile.get("Age", 40))
+        bmi    = float(health.get("Bmi") or profile.get("Bmi") or 25.0)
+
+        conditions = health.get("MedicalConditions", [])
+        detected_conditions, condition_risk = self._parse_conditions(conditions)
+
+        # Absolute RED overrides
+        abs_red = ["cirrhosis","liver failure","hepatic encephalopathy",
+                   "decompensated","end-stage liver"]
+        if any(any(r in c.lower() for r in abs_red) for c in conditions):
+            return self._build_result(0.85, age, health, profile,
+                                      detected_conditions, "absolute_override", None, None)
+
+        # Lab values
+        ast       = health.get("AST")      or health.get("ast")
+        alt       = health.get("ALT")      or health.get("alt")
+        ggt       = health.get("GGT")      or health.get("ggt")
+        platelets = health.get("Platelets")
+        glucose   = health.get("FastingGlucose") or health.get("glucose")
+        hba1c     = health.get("HbA1c")
+        albumin   = health.get("Albumin")
+        alcohol   = health.get("Alcohol", "Never")
+
+        diabetic = self._is_diabetic(health)
+        has_mets = self._has_metabolic_syndrome(health, profile)
+        ast_alt  = round(float(ast)/float(alt), 3) if ast and alt and float(alt) > 0 else 0.8
+
+        method_used = "rule_based"
+        base_risk   = None
+        fib4_score  = None
+        lfs_score   = None
+
+        # Strategy 1: FIB-4
+        fib4_score, fib4_risk = fib4_index(age, ast, alt, platelets)
+        if fib4_risk is not None:
+            base_risk   = fib4_risk
+            method_used = "fib4_index"
+
+        # Strategy 2: ML ensemble
+        if self.model is not None and ast and alt:
+            fv = self._extract_features(data, ast, alt, ggt, glucose, hba1c, albumin)
+            if fv is not None:
+                ml_risk = self.predict_risk(fv)
+                if ml_risk is not None:
+                    if base_risk is not None:
+                        base_risk   = 0.60 * base_risk + 0.40 * ml_risk
+                        method_used = "fib4_ml_ensemble"
+                    else:
+                        base_risk   = ml_risk
+                        method_used = "ml_model"
+
+        # Strategy 3: NAFLD-LFS
+        if base_risk is None:
+            lfs_score = nafld_lfs(has_mets, diabetic, ast_alt, bmi)
+            if lfs_score is not None:
+                base_risk   = 0.32 if lfs_score > -0.64 else 0.10
+                method_used = "nafld_lfs"
+
+        # Strategy 4: rule-based
+        if base_risk is None:
+            base_risk   = self._rule_based(health, profile)
+            method_used = "rule_based"
+
+        # Penalties
+        alcohol_penalty  = {"Daily":0.28,"Weekly":0.10,"Occasional":0.03,"Never":0.0}.get(alcohol, 0.0)
+        ggt_penalty      = 0.0
+        if ggt:
+            g = float(ggt)
+            if g > 100:  ggt_penalty = 0.12
+            elif g > 60: ggt_penalty = 0.07
+            elif g > 48: ggt_penalty = 0.03
+        albumin_penalty  = 0.15 if (albumin and float(albumin) < 3.5) else 0.0
+
+        final_risk = min(1.0, base_risk + condition_risk * 0.4 +
+                         alcohol_penalty + ggt_penalty + albumin_penalty)
+
+        return self._build_result(final_risk, age, health, profile,
+                                  detected_conditions, method_used, fib4_score, lfs_score)
+
+    def _build_result(self, final_risk, age, health, profile,
+                      detected, method, fib4_score, lfs_score):
+        risk_level = self.get_risk_level(final_risk)
+        lf = {"diet": profile.get("Diet","Average"), "activity": profile.get("ActivityLevel","Moderate"),
+              "sleep": health.get("Sleep",7), "stress": health.get("Stress","Medium")}
+        ast = health.get("AST") or health.get("ast")
+        alt = health.get("ALT") or health.get("alt")
+        confidence = (0.90 if method == "fib4_ml_ensemble" else
+                      0.85 if method == "fib4_index" else
+                      0.78 if method == "ml_model" else
+                      0.65 if method == "nafld_lfs" else 0.52)
+        metrics = {}
+        if fib4_score:
+            metrics["fib4_score"]    = fib4_score
+            metrics["fib4_category"] = ("Low" if fib4_score < 1.30 else
+                                         "Indeterminate" if fib4_score < 2.67 else
+                                         "High" if fib4_score < 3.25 else "Advanced Fibrosis")
+        if lfs_score is not None:
+            metrics["nafld_lfs"]          = lfs_score
+            metrics["fatty_liver_likely"] = lfs_score > -0.64
+        if ast and alt:
+            metrics["ast_alt_ratio"] = round(float(ast)/float(alt), 2)
+        ggt = health.get("GGT") or health.get("ggt")
+        if ggt:
+            metrics["ggt"] = float(ggt)
         return {
-            'current_risk': round(final_risk, 2),
-            'risk_level': self.get_risk_level(final_risk),
-            'health_score': self.get_health_score(final_risk),
-            'metrics': metrics,
-            'risk_progression': risk_progression,
-            'recommendations': recommendations,
-            'liver_conditions': detected_conditions,
-            'model_confidence': round(confidence, 2)
+            "current_risk":     round(final_risk, 3),
+            "risk_level":       risk_level,
+            "health_score":     self.get_health_score(final_risk),
+            "method_used":      method,
+            "model_confidence": round(confidence, 2),
+            "metrics":          metrics,
+            "liver_conditions": detected,
+            "risk_progression": self.project_risk_progression(final_risk, age, lf),
+            "recommendations":  self._get_recommendations(risk_level, detected, health),
+            "possible_issues":  self._possible_issues(health, ast, alt),
         }
-    
-    def _calculate_bmi_risk(self, bmi):
-        """Calculate BMI risk with proper gradation"""
-        if bmi > 35:
-            return 0.5
-        elif bmi > 30:
-            return 0.35
-        elif bmi > 27:
-            return 0.2
-        elif bmi > 25:
-            return 0.1
-        elif bmi > 18.5:
-            return 0.02
-        else:
-            return 0.05
-    
-    def _rule_based_risk_fixed(self, data, baseline):
-        """Fixed rule-based calculation with proper scaling"""
-        profile = data.get('ProfileInfo', {})
-        health = data.get('HealthInfo', {})
-        
-        bmi = health.get('Bmi', profile.get('Bmi', 25))
-        alcohol = health.get('Alcohol', 'Never')
-        
-        risk = baseline
-        
-        if bmi > 35:
-            risk += 0.25
-        elif bmi > 30:
-            risk += 0.15
-        elif bmi > 27:
-            risk += 0.08
-        elif bmi > 25:
-            risk += 0.03
-        
-        if alcohol == 'Daily':
-            risk += 0.3
-        elif alcohol == 'Weekly':
-            risk += 0.15
-        elif alcohol == 'Occasional':
-            risk += 0.05
-        
-        diet = profile.get('Diet', 'Average')
-        if diet == 'Poor':
-            risk += 0.1
-        elif diet == 'Good':
-            risk -= 0.02
-        
-        return max(0.02, min(risk, 1.0))
-    
-    def _get_personalized_recommendations(self, risk_level, detected_conditions):
-        """Generate recommendations based on risk level and specific conditions"""
-        
-        base_recs = {
-            'GREEN': [
-                "Maintain healthy BMI",
-                "Limit alcohol to occasional",
-                "Eat balanced diet with limited processed foods",
-                "Stay hydrated"
-            ],
-            'YELLOW': [
-                "Reduce alcohol to occasional",
-                "Limit fatty and processed foods",
-                "Lose 5-10% body weight to reduce fatty liver",
-                "Get liver enzyme tests annually"
-            ],
-            'RED': [
-                "IMMEDIATE: Consult hepatologist",
-                "Stop alcohol completely",
-                "Follow strict liver-friendly diet",
-                "Get regular liver function tests"
-            ]
-        }
-        
-        condition_recs = []
-        for condition in detected_conditions:
-            cond_name = condition['condition']
-            
-            if 'Fatty Liver' in cond_name:
-                condition_recs.append("Reduce sugar and refined carbs intake")
-                if condition['severity'] == 'Severe':
-                    condition_recs.append("Consider vitamin E supplementation (consult doctor)")
-            
-            elif 'Cirrhosis' in cond_name:
-                condition_recs.append("Get screened for varices and liver cancer every 6 months")
-                condition_recs.append("Avoid ALL alcohol and NSAIDs")
-            
-            elif 'Hepatitis' in cond_name:
-                condition_recs.append("Consult hepatologist for antiviral treatment")
-                condition_recs.append("Get vaccinated for hepatitis A and B")
-            
-            elif 'Alcoholic Liver' in cond_name:
-                condition_recs.append("Complete alcohol cessation required")
-                condition_recs.append("Consider addiction counseling and support groups")
-            
-            elif 'Autoimmune Hepatitis' in cond_name:
-                condition_recs.append("Take immunosuppressive medications as prescribed")
-                condition_recs.append("Regular monitoring of liver enzymes required")
-            
-            elif 'PBC' in cond_name or 'Primary Biliary' in cond_name:
-                condition_recs.append("Take ursodeoxycholic acid (UDCA) if prescribed")
-                condition_recs.append("Monitor for fatigue and itching symptoms")
-            
-            elif 'Hemochromatosis' in cond_name:
-                condition_recs.append("Regular therapeutic phlebotomy as recommended")
-                condition_recs.append("Avoid iron supplements and vitamin C")
-            
-            elif 'Wilson' in cond_name:
-                condition_recs.append("Take copper chelation therapy as prescribed")
-                condition_recs.append("Avoid copper-rich foods (shellfish, nuts, chocolate)")
-        
-        all_recs = base_recs.get(risk_level, base_recs['GREEN']).copy()
-        for rec in condition_recs:
-            if rec not in all_recs:
-                all_recs.append(rec)
-        
-        return all_recs[:6]
-    
-    def _get_ml_risk(self, feature_vector):
-        """Get risk from ML model (handles multiclass)"""
-        if self.model is not None:
-            try:
-                proba = self.model.predict_proba([feature_vector])[0]
-                
-                if len(proba) > 2:
-                    risk = sum(proba[1:])
-                else:
-                    risk = proba[1] if len(proba) > 1 else proba[0]
-                
-                return risk
-            except:
-                return None
-        return None
-    
-    def _extract_features(self, data):
-        """Extract feature vector for ML model"""
+
+    def _is_diabetic(self, h):
+        conds = [c.lower() for c in (h.get("MedicalConditions") or [])]
+        g = h.get("FastingGlucose") or h.get("glucose")
+        a = h.get("HbA1c")
+        return (any("diabetes" in c for c in conds) or
+                (g and float(g) >= 126) or (a and float(a) >= 6.5))
+
+    def _has_metabolic_syndrome(self, h, p):
+        count = 0
+        if (h.get("Triglycerides") or 0) >= 150:                               count += 1
+        if (h.get("HDLCholesterol") or 99) < 40:                               count += 1
+        sbp = h.get("SystolicBP") or h.get("systolic_bp") or 0
+        if int(sbp) >= 130:                                                     count += 1
+        fg = h.get("FastingGlucose") or h.get("glucose") or 0
+        if float(fg) >= 100:                                                    count += 1
+        if float(h.get("Bmi") or 25) >= 25:                                    count += 1
+        return count >= 3
+
+    def _extract_features(self, data, ast, alt, ggt, glucose, hba1c, albumin):
         try:
-            profile = data.get('ProfileInfo', {})
-            health = data.get('HealthInfo', {})
-            
-            features = [
-                profile.get('Age', 50),
-                health.get('Bmi', profile.get('Bmi', 25)),
-                health.get('ast', 30),
-                health.get('alt', 30),
-                health.get('ggt', 30),
-                health.get('glucose', 100)
-            ]
-            return features
-        except:
+            p = data.get("ProfileInfo", {})
+            h = data.get("HealthInfo",  {})
+            gluc = float(glucose) if glucose else (float(hba1c)*28.7-46.7 if hba1c else 90)
+            return [float(p.get("Age",40)), float(h.get("Bmi") or 25),
+                    float(ast or 30), float(alt or 30), float(ggt or 25), gluc]
+        except Exception:
             return None
-    
-    def _alcohol_risk(self, alcohol):
-        mapping = {'Never': 0.0, 'Occasional': 0.05, 'Weekly': 0.15, 'Daily': 0.3}
-        return mapping.get(alcohol, 0.0)
-    
-    def _diet_risk(self, diet):
-        mapping = {'Poor': 0.1, 'Average': 0.0, 'Good': -0.02}
-        return mapping.get(diet, 0.0)
+
+    def _rule_based(self, h, p):
+        risk = 0.0
+        bmi  = float(h.get("Bmi") or 25)
+        if bmi > 35:   risk += 0.20
+        elif bmi > 30: risk += 0.12
+        elif bmi > 25: risk += 0.06
+        if h.get("Alcohol") == "Daily":    risk += 0.25
+        elif h.get("Alcohol") == "Weekly": risk += 0.10
+        if self._is_diabetic(h):           risk += 0.18
+        if p.get("Diet") == "Poor":        risk += 0.08
+        if h.get("Smoking") == "Daily":    risk += 0.06
+        age = int(p.get("Age",40))
+        risk += 0.08 if age > 60 else 0.04 if age > 45 else 0
+        return min(risk, 0.85)
+
+    def _get_recommendations(self, risk_level, detected, health):
+        base = {
+            "GREEN":  ["Limit alcohol to <14 units/week (men), <7 units/week (women)",
+                       "Maintain BMI 18.5-22.9 (Indian cutoffs)",
+                       "Annual liver function test if BMI > 23 or diabetes present"],
+            "YELLOW": ["Get LFT panel done: AST, ALT, GGT, albumin, bilirubin",
+                       "Reduce alcohol to occasional or eliminate",
+                       "7-10% weight loss reduces hepatic fat by 50% in NAFLD",
+                       "Avoid paracetamol >2g/day; NSAIDs can worsen liver disease"],
+            "RED":    ["URGENT: Consult gastroenterologist or hepatologist",
+                       "Fibroscan or biopsy may be recommended to stage fibrosis",
+                       "Eliminate alcohol completely — worsens fibrosis at any amount",
+                       "6-monthly ultrasound + AFP for cirrhosis surveillance"],
+        }.get(risk_level, [])
+        extras = []
+        for d in detected:
+            if "Hepatitis B" in d["condition"]:
+                extras.append("Monitor HBsAg + HBV DNA every 6 months; discuss antivirals")
+            if "Hepatitis C" in d["condition"]:
+                extras.append("DAA therapy achieves >95% cure — consult hepatologist urgently")
+            if "Cirrhosis" in d["condition"]:
+                extras.append("6-monthly AFP + ultrasound for hepatocellular carcinoma screening")
+        if health.get("Alcohol") == "Daily":
+            extras.append("Daily alcohol: most modifiable liver risk — discuss cessation support")
+        return (base + extras)[:6]
+
+    def _possible_issues(self, health, ast, alt):
+        issues = []
+        if ast and float(ast) > 40:
+            issues.append(f"Elevated AST ({ast} U/L) — liver inflammation")
+        if alt and float(alt) > 56:
+            issues.append(f"Elevated ALT ({alt} U/L) — liver cell damage")
+        ggt = health.get("GGT") or health.get("ggt")
+        if ggt and float(ggt) > 60:
+            issues.append(f"Elevated GGT ({ggt} U/L) — bile duct or alcohol marker")
+        alb = health.get("Albumin")
+        if alb and float(alb) < 3.5:
+            issues.append(f"Low albumin ({alb} g/dL) — reduced liver synthetic function")
+        if health.get("Alcohol") == "Daily":
+            issues.append("Daily alcohol accelerates liver fibrosis progression")
+        return issues

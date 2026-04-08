@@ -12,7 +12,6 @@ import FutureSelfTimeline from "../../components/results/FutureSelfTimeline";
 
 const BodyModelView = dynamic(() => import("../../components/BodyModelView"), { ssr: false });
 
-/** Interpolate timeline data at a given year (0–10). */
 function getInterpolatedTimelinePoint(timeline, year) {
   if (!timeline?.length || year <= 0) return timeline?.[0] ?? null;
   const sorted = [...timeline].sort((a, b) => a.year - b.year);
@@ -37,7 +36,6 @@ function getInterpolatedTimelinePoint(timeline, year) {
   };
 }
 
-/** Build biological_age shape for preview at yearAhead (real_age from report). */
 function getPreviewBiologicalAge(reportBio, interpolated, yearAhead) {
   if (!reportBio) return reportBio;
   if (yearAhead <= 0) return reportBio;
@@ -67,60 +65,68 @@ export default function BodyAgeingPage() {
 
   const yearAhead = ageingLevel * 10;
   const timeline = result?.future_self?.timeline ?? [];
-  const interpolated = useMemo(
-    () => getInterpolatedTimelinePoint(timeline, yearAhead),
-    [timeline, yearAhead]
-  );
-  const previewBiologicalAge = useMemo(
-    () => getPreviewBiologicalAge(result?.biological_age, interpolated, yearAhead),
-    [result?.biological_age, interpolated, yearAhead]
-  );
+  const interpolated = useMemo(() => getInterpolatedTimelinePoint(timeline, yearAhead), [timeline, yearAhead]);
+  const previewBiologicalAge = useMemo(() => getPreviewBiologicalAge(result?.biological_age, interpolated, yearAhead), [result?.biological_age, interpolated, yearAhead]);
 
-  const handleTimelineYearSelect = (year) => {
-    setAgeingLevel(year / 10);
-  };
+  const handleTimelineYearSelect = (year) => setAgeingLevel(year / 10);
 
   useEffect(() => {
     if (contentRef.current) gsap.fromTo(contentRef.current, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
   }, [result]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-(--color-bg) flex flex-col">
       <DashboardBackground />
       <AppHeader />
 
-      <main className="flex-1 py-10 px-4 md:px-6 overflow-y-auto relative">
-        <div className="max-w-5xl mx-auto">
+      <main className="flex-1 py-8 px-4 md:px-6">
+        <div className="max-w-6xl mx-auto">
           <DashboardLayout>
             <div ref={contentRef}>
-              <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-1 text-glow-primary">Body Ageing</h1>
-              <p className="text-[var(--color-muted)] mb-8">How old your body is vs your real age, and how you age over time. Move the slider to preview.</p>
 
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-10">
-                <div className="flex flex-col">
-                  <div className="rounded-2xl overflow-hidden glass-card glass-card-glow h-[420px] w-full">
+              {/* Page header */}
+              <div className="mb-7">
+                <h1 className="text-2xl font-bold text-slate-900 mb-1.5">Body Ageing</h1>
+                <p className="text-(--color-muted) text-sm">See how your biological age compares to your real age, and preview how your body changes over time.</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+
+                {/* Left: 3D Model + slider */}
+                <div className="flex flex-col gap-4">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ height: "420px" }}>
                     <BodyModelView gender={gender} ageingLevel={ageingLevel} className="w-full h-full" showScanRing />
                   </div>
-                  <div className="mt-4 px-1 rounded-xl glass-card p-4">
-                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                      Years ahead: <span className="text-[var(--color-primary)] text-glow-primary">{yearAhead.toFixed(1)}</span>
-                    </label>
+
+                  {/* Slider card */}
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-semibold text-slate-800">Years ahead</p>
+                      <span className="text-xl font-bold text-(--color-primary)">{yearAhead.toFixed(1)}</span>
+                    </div>
                     <input
                       type="range"
                       min={0}
                       max={100}
                       value={ageingLevel * 100}
                       onChange={(e) => setAgeingLevel(Number(e.target.value) / 100)}
-                      className="w-full h-2.5 rounded-full appearance-none bg-white/10 accent-[var(--color-primary)] [&::-webkit-slider-thumb]:shadow-[0_0_12px_rgba(20,184,166,0.5)]"
-                      aria-label="Years ahead"
+                      className="w-full h-2 rounded-full appearance-none bg-slate-100 accent-(--color-primary) cursor-pointer"
+                      aria-label="Preview years ahead"
                     />
-                    <p className="text-xs text-[var(--color-muted)] mt-1.5">
-                      {yearAhead <= 0 ? "Today" : `Preview at ${yearAhead.toFixed(1)} years — model and data update together`}
-                    </p>
+                    <div className="flex justify-between text-xs text-(--color-muted) mt-1.5">
+                      <span>Today</span>
+                      <span>10 years</span>
+                    </div>
+                    {yearAhead > 0 && (
+                      <p className="text-xs text-(--color-muted) mt-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                        Previewing body state at {yearAhead.toFixed(1)} years ahead
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-8">
+                {/* Right: Bio age + timeline */}
+                <div className="flex flex-col gap-5">
                   <BiologicalAgeCard biological_age={previewBiologicalAge} />
                   <FutureSelfTimeline
                     future_self={result?.future_self}
@@ -129,13 +135,14 @@ export default function BodyAgeingPage() {
                   />
                 </div>
               </div>
+
             </div>
           </DashboardLayout>
         </div>
       </main>
 
-      <footer className="h-12 flex items-center justify-center border-t border-white/10">
-        <span className="text-xs text-[var(--color-muted)]">VitalTwin · Healthcare forensics</span>
+      <footer className="h-12 flex items-center justify-center border-t border-slate-200">
+        <span className="text-xs text-(--color-muted)">VitalTwin · Intelligent Health Analysis</span>
       </footer>
     </div>
   );

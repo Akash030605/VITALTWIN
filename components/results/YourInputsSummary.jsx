@@ -36,34 +36,34 @@ export default function YourInputsSummary({ profile = {}, input = {} }) {
 
   return (
     <div
-      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 mb-6"
+      className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 mb-6"
       role="region"
       aria-label="Your inputs summary"
     >
-      <p className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-wider mb-2">Based on your profile</p>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-[var(--color-muted)]">
+      <p className="text-xs font-semibold text-(--color-primary) uppercase tracking-wider mb-2">Based on your profile</p>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-(--color-muted)">
         {lifestyle.map(({ key, value }) => (
           <span key={key}>
-            <span className="text-[var(--foreground)]/80">{INPUT_LABELS[key]}:</span>{" "}
-            <span className="text-[var(--foreground)] font-medium">{formatValue(key, value)}</span>
+            <span className="text-(--foreground)/80">{INPUT_LABELS[key]}:</span>{" "}
+            <span className="text-(--foreground) font-medium">{formatValue(key, value)}</span>
           </span>
         ))}
         {conditions.length > 0 && (
           <span>
-            <span className="text-[var(--foreground)]/80">Conditions:</span>{" "}
-            <span className="text-[var(--foreground)] font-medium">{conditions.join(", ")}</span>
+            <span className="text-(--foreground)/80">Conditions:</span>{" "}
+            <span className="text-(--foreground) font-medium">{conditions.join(", ")}</span>
           </span>
         )}
         {diet && (
           <span>
-            <span className="text-[var(--foreground)]/80">Diet:</span>{" "}
-            <span className="text-[var(--foreground)] font-medium">{diet}</span>
+            <span className="text-(--foreground)/80">Diet:</span>{" "}
+            <span className="text-(--foreground) font-medium">{diet}</span>
           </span>
         )}
         {activity && (
           <span>
-            <span className="text-[var(--foreground)]/80">Activity:</span>{" "}
-            <span className="text-[var(--foreground)] font-medium">{activity}</span>
+            <span className="text-(--foreground)/80">Activity:</span>{" "}
+            <span className="text-(--foreground) font-medium">{activity}</span>
           </span>
         )}
       </div>

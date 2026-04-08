@@ -35,7 +35,7 @@ export default function DashboardMaleBodyScene() {
       <directionalLight position={[-4, 4, -4]} intensity={0.7} />
       <directionalLight position={[0, 8, 2]} intensity={0.5} />
       <DashboardMaleBodyMesh />
-      <OrbitControls enableZoom minDistance={4} maxDistance={20} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }

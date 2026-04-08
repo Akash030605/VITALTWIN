@@ -41,7 +41,7 @@ export default function HeartModelScene() {
       <directionalLight position={[5, 5, 5]} intensity={1.2} />
       <pointLight position={[0, 2, 2]} intensity={0.6} color="#2dd4bf" />
       <HeartMesh />
-      <OrbitControls enableZoom minDistance={6} maxDistance={8} />
+      <OrbitControls enableZoom={false} />
     </>
   );
 }
