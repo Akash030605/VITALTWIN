@@ -15,6 +15,20 @@ from utils.district_priors import get_priors, cardiovascular_prior_adjustment
 _HEART_ML_V2_PATH = Path(__file__).parent.parent / "models" / "heart_ml_v2.pkl"
 _heart_ml_v2_bundle = None
 
+# ── Load INTERHEART India ORs (Yusuf 2004, Lancet) ───────────────────────────
+_INTERHEART_PATH = Path(__file__).parent.parent / "models" / "interheart_india.pkl"
+_interheart_bundle = None
+
+def _load_interheart():
+    global _interheart_bundle
+    if _interheart_bundle is None and _INTERHEART_PATH.exists():
+        try:
+            with open(_INTERHEART_PATH, "rb") as f:
+                _interheart_bundle = pickle.load(f)
+        except Exception:
+            pass
+    return _interheart_bundle
+
 def _load_heart_ml_v2():
     global _heart_ml_v2_bundle
     if _heart_ml_v2_bundle is None and _HEART_ML_V2_PATH.exists():
@@ -200,8 +214,8 @@ class HeartModel(BaseOrganModel):
     def __init__(self):
         super().__init__("heart")
         self.load_model()
-        # Load Heart ML v2 (Cleveland UCI, better clinical features than old cardio_train)
-        self._heart_ml_v2 = _load_heart_ml_v2()
+        self._heart_ml_v2   = _load_heart_ml_v2()
+        self._interheart    = _load_interheart()
 
         # Heart conditions keyword map
         self.heart_conditions = {
@@ -347,6 +361,34 @@ class HeartModel(BaseOrganModel):
                 method_used = "rule_based"
         else:
             base_risk = self._rule_based(data)
+
+        # ── INTERHEART India blend (Yusuf 2004, Lancet, N=15,152) ────────
+        # OR-based: smoking 2.87, diabetes 2.37, hypertension 1.91,
+        #           abdominal obesity 1.62, psychosocial 2.67
+        # Blended as 20% weight with primary method when available
+        ih = self._interheart
+        if ih is not None:
+            try:
+                or_map   = ih.get('odds_ratios', {})
+                combined_or = 1.0
+                if smoker:      combined_or *= or_map.get('smoking',    2.87)
+                if diabetic:    combined_or *= or_map.get('diabetes',   2.37)
+                if self._is_hypertensive(health):
+                                combined_or *= or_map.get('hypertension', 1.91)
+                bmi_v = float(bmi)
+                if bmi_v > 25:  combined_or *= or_map.get('abdominal_obesity', 1.62)
+                if health.get('Stress') in ('High','Very High'):
+                                combined_or *= or_map.get('psychosocial', 2.67)
+                if fam_heart:   combined_or *= or_map.get('family_history', 1.55)
+                # Pop. baseline AMI risk India ~4.5% (GBD 2019)
+                pop_base = ih.get('population_baseline_risk', 0.045)
+                ih_risk  = 1.0 - 1.0 / (1.0 + pop_base * (combined_or - 1.0))
+                ih_risk  = min(0.95, max(0.01, ih_risk))
+                # Blend: 80% primary + 20% INTERHEART
+                base_risk = 0.80 * base_risk + 0.20 * ih_risk
+                method_used += "+interheart_india"
+            except Exception:
+                pass
 
         # ── South Asian correction ────────────────────────────────────────
         base_risk = south_asian_correction(base_risk, age, gender)
