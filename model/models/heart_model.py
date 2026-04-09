@@ -366,25 +366,49 @@ class HeartModel(BaseOrganModel):
         # OR-based: smoking 2.87, diabetes 2.37, hypertension 1.91,
         #           abdominal obesity 1.62, psychosocial 2.67
         # Blended as 20% weight with primary method when available
+        # ── INTERHEART India blend (Yusuf 2004, Lancet, N=15,152) ────────
+        # Source: interheart_india.pkl — South Asia ORs from Table 4 of Lancet 2004
+        # Keys in pkl: 'interheart_south_asia_ors' (dict: factor → (OR, PAR%, note))
+        #              'india_ami_baseline_10yr' (age/sex lookup)
         ih = self._interheart
         if ih is not None:
             try:
-                or_map   = ih.get('odds_ratios', {})
+                # Correct key: interheart_south_asia_ors (not odds_ratios)
+                or_map = ih.get('interheart_south_asia_ors', ih.get('odds_ratios', {}))
+                # Each value: (OR, PAR%, note) — extract OR (index 0) or float
+                def get_or(key, default):
+                    v = or_map.get(key, default)
+                    return float(v[0]) if isinstance(v, (tuple, list)) else float(v)
+
                 combined_or = 1.0
-                if smoker:      combined_or *= or_map.get('smoking',    2.87)
-                if diabetic:    combined_or *= or_map.get('diabetes',   2.37)
+                if smoker:
+                    combined_or *= get_or('smoking', 2.87)
+                if diabetic:
+                    combined_or *= get_or('diabetes', 2.37)
                 if self._is_hypertensive(health):
-                                combined_or *= or_map.get('hypertension', 1.91)
+                    combined_or *= get_or('hypertension', 1.91)
                 bmi_v = float(bmi)
-                if bmi_v > 25:  combined_or *= or_map.get('abdominal_obesity', 1.62)
-                if health.get('Stress') in ('High','Very High'):
-                                combined_or *= or_map.get('psychosocial', 2.67)
-                if fam_heart:   combined_or *= or_map.get('family_history', 1.55)
-                # Pop. baseline AMI risk India ~4.5% (GBD 2019)
-                pop_base = ih.get('population_baseline_risk', 0.045)
-                ih_risk  = 1.0 - 1.0 / (1.0 + pop_base * (combined_or - 1.0))
-                ih_risk  = min(0.95, max(0.01, ih_risk))
-                # Blend: 80% primary + 20% INTERHEART
+                if bmi_v > 25:
+                    combined_or *= get_or('abdominal_obesity', 1.62)
+                if health.get('Stress') in ('High', 'Very High'):
+                    combined_or *= get_or('psychosocial', 2.67)
+                if fam_heart:
+                    combined_or *= get_or('family_history', 1.55)
+                # India-specific baseline by age+sex (Gupta R, J Am Coll Cardiol 2012)
+                # Falls back to 4.5% (GBD 2019) if not found
+                baseline_table = ih.get('india_ami_baseline_10yr', {})
+                pop_base = 0.045
+                if baseline_table:
+                    sex_key = gender  # 'Male' or 'Female'
+                    age_tbl = baseline_table.get(sex_key, {})
+                    for age_range, rate in age_tbl.items():
+                        lo, hi = age_range
+                        if lo <= age <= hi:
+                            pop_base = rate
+                            break
+                ih_risk = 1.0 - 1.0 / (1.0 + pop_base * (combined_or - 1.0))
+                ih_risk = min(0.95, max(0.01, ih_risk))
+                # Blend: 80% primary + 20% INTERHEART India
                 base_risk = 0.80 * base_risk + 0.20 * ih_risk
                 method_used += "+interheart_india"
             except Exception:
