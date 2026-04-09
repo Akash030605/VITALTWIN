@@ -115,14 +115,28 @@ def caide_score(age, education_years, systolic_bp, bmi,
     pts_clipped = max(0, min(15, pts))
     dementia_risk = risk_table.get(pts_clipped, 0.339 if pts >= 16 else 0.010)
 
-    # Convert 20-year risk to current 0-1 risk score
-    if dementia_risk >= 0.164:   risk_score = 0.60 + min(0.30, (dementia_risk - 0.164) * 1.5)
-    elif dementia_risk >= 0.074: risk_score = 0.40 + (dementia_risk - 0.074) / (0.164 - 0.074) * 0.20
-    elif dementia_risk >= 0.042: risk_score = 0.25 + (dementia_risk - 0.042) / (0.074 - 0.042) * 0.15
-    elif dementia_risk >= 0.019: risk_score = 0.15 + (dementia_risk - 0.019) / (0.042 - 0.019) * 0.10
-    else:                        risk_score = 0.08
+    # ── India incidence correction ────────────────────────────────────────────
+    # CAIDE was calibrated on a Finnish cohort (Kivipelto 2006).
+    # India dementia prevalence in 60+ is ~7.4% (LASI-DAD 2017-18, Alzheimer's
+    # and Related Disorders Society of India / Lancet Reg Health 2022).
+    # Finland age-standardised dementia incidence ≈ 15.8/1000 person-years (Eurodem).
+    # India age-standardised ≈ 11.6/1000 (GBD 2019 South Asia region).
+    # Correction factor: 11.6 / 15.8 = 0.734 (round to 0.74 for parsimony).
+    # Applied only to the CAIDE table risk, not to the clinical risk score
+    # (which incorporates INTERSTROKE India data directly).
+    # Source: Shifu Xiao et al., Lancet Reg Health – SE Asia 2022;
+    #         GBD 2019 Dementia Collaborators; LASI-DAD wave 1, 2017-18.
+    INDIA_CAIDE_CORRECTION = 0.74
+    dementia_risk_india = dementia_risk * INDIA_CAIDE_CORRECTION
 
-    return round(risk_score, 3), pts, round(dementia_risk * 100, 1)
+    # Convert 20-year India-corrected risk to current 0-1 risk score
+    if dementia_risk_india >= 0.164:   risk_score = 0.60 + min(0.30, (dementia_risk_india - 0.164) * 1.5)
+    elif dementia_risk_india >= 0.074: risk_score = 0.40 + (dementia_risk_india - 0.074) / (0.164 - 0.074) * 0.20
+    elif dementia_risk_india >= 0.042: risk_score = 0.25 + (dementia_risk_india - 0.042) / (0.074 - 0.042) * 0.15
+    elif dementia_risk_india >= 0.019: risk_score = 0.15 + (dementia_risk_india - 0.019) / (0.042 - 0.019) * 0.10
+    else:                              risk_score = 0.08
+
+    return round(risk_score, 3), pts, round(dementia_risk_india * 100, 1)
 
 
 # ─── INTERSTROKE India Stroke Risk ────────────────────────────────────────────

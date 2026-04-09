@@ -54,6 +54,51 @@ def _get_tb_state_multiplier(state: str) -> float:
 
 # India city PM2.5 annual averages (µg/m³) — CPCB 2023
 # WHO safe limit: 5 µg/m³ | India NAAQS: 40 µg/m³
+# ── Indoor radon exposure by Indian state (µBq/m³ → lung cancer risk) ─────────
+# Source: Atomic Minerals Directorate & BARC India radiation surveys
+#         WHO Indoor Radon Handbook 2009 (WHO/HTM/TDR/2009.6)
+#         National average indoor radon: ~42 Bq/m³ (AMD/BARC 2011)
+#         Elevated states: Kerala ~91, Rajasthan ~79, Jharkhand ~68, HP ~58
+#         Each 100 Bq/m³ increase → +16% lung cancer risk (WHO/IARC)
+INDIA_STATE_RADON_BQ = {
+    "kerala":           91.0,
+    "rajasthan":        79.0,
+    "jharkhand":        68.0,
+    "himachal pradesh": 58.0,
+    "hp":               58.0,
+    "uttarakhand":      52.0,
+    "jammu and kashmir":48.0,
+    "j&k":              48.0,
+    "meghalaya":        47.0,
+    "assam":            45.0,
+    "karnataka":        44.0,
+    "national_average": 42.0,   # default
+    "maharashtra":      38.0,
+    "gujarat":          36.0,
+    "delhi":            34.0,
+    "uttar pradesh":    32.0,
+    "west bengal":      30.0,
+    "tamil nadu":       29.0,
+}
+_RADON_NATIONAL_AVG = 42.0   # Bq/m³
+
+def get_radon_risk(state: str) -> tuple:
+    """
+    Returns (radon_bq, risk_increment) for the given Indian state.
+    Risk formula: WHO 2009 — 16% lung cancer risk increase per 100 Bq/m³.
+    Above national average only (42 Bq/m³ = 0 extra risk).
+    Source: WHO Indoor Radon Handbook 2009; AMD/BARC India 2011.
+    """
+    if not state:
+        return _RADON_NATIONAL_AVG, 0.0
+    key = state.strip().lower()
+    bq = INDIA_STATE_RADON_BQ.get(key, _RADON_NATIONAL_AVG)
+    excess_bq = max(0.0, bq - _RADON_NATIONAL_AVG)
+    # +16% per 100 Bq/m³ above baseline, capped at +0.12
+    risk_inc = round(min(0.12, (excess_bq / 100.0) * 0.16), 4)
+    return bq, risk_inc
+
+
 CITY_AQI_PM25 = {
     "delhi": 98.6,
     "new delhi": 98.6,
@@ -338,7 +383,56 @@ class LungsModel(BaseOrganModel):
         activity_risk = activity_map.get(activity, 0.02)
         risk_components['inactivity'] = activity_risk
 
+        # 9. Occupational dust/fume exposure
+        # Silicosis (mining, stone cutting, construction) — OR 2.3–4.5 for COPD (Blanc 2009)
+        # Byssinosis (textile, cotton) — 30–40% FEV1 decline (WHO cotton dust standard)
+        # Coal dust — OR 2.1 for CWP (NIOSH/DGMS India)
+        # ~60 million Indian workers in high-dust occupations (MoLE India 2020)
+        # Source: Blanc PD et al., Eur Respir J 2009;33:298-306 (occupational COPD, pop-attributable 14%)
+        occupational = health.get('OccupationalExposure') or health.get('Occupation', '')
+        occ_risk = 0.0
+        occ_note = None
+        if occupational:
+            occ_lower = occupational.lower()
+            if any(k in occ_lower for k in ['mining', 'mine', 'quarry', 'stone cutting', 'stone cut',
+                                             'silica', 'sandblasting', 'ceramics']):
+                occ_risk = 0.25
+                occ_note = f"Silica dust exposure ({occupational}) — Silicosis + COPD risk: OR 2.3–4.5 (Blanc 2009, DGMS India)"
+            elif any(k in occ_lower for k in ['coal', 'colliery', 'coking']):
+                occ_risk = 0.20
+                occ_note = f"Coal dust exposure ({occupational}) — CWP risk: OR 2.1 (NIOSH)"
+            elif any(k in occ_lower for k in ['textile', 'cotton', 'jute', 'weaving', 'spinning', 'byssin']):
+                occ_risk = 0.18
+                occ_note = f"Textile/cotton dust ({occupational}) — Byssinosis risk; FEV1 decline ~30–40% (WHO)"
+            elif any(k in occ_lower for k in ['construction', 'cement', 'asbestos', 'demolition']):
+                occ_risk = 0.16
+                occ_note = f"Construction/cement dust ({occupational}) — Pneumoconiosis risk (DGMS India)"
+            elif any(k in occ_lower for k in ['farming', 'agricultural', 'pesticide', 'crop dust']):
+                occ_risk = 0.10
+                occ_note = f"Agricultural dust ({occupational}) — Organic dust COPD risk (SWORD/SENSOR)"
+            elif any(k in occ_lower for k in ['chemical', 'fume', 'welding', 'foundry', 'smelting', 'paint']):
+                occ_risk = 0.12
+                occ_note = f"Chemical fume exposure ({occupational}) — Occupational asthma + COPD risk"
+        if occ_risk > 0:
+            risk_components['occupational'] = occ_risk
+            possible_issues.append(occ_note)
+            method_used.append("Occupational Exposure (Blanc 2009 / DGMS India)")
+
+        # 10. Indoor radon exposure by state (WHO Radon Handbook 2009 / BARC India)
+        # Kerala 91 Bq/m³, Rajasthan 79, Jharkhand 68, Himachal Pradesh 58
+        # +16% lung cancer risk per 100 Bq/m³ above national average (42 Bq/m³)
+        radon_bq, radon_risk = get_radon_risk(state)
+        if radon_risk > 0:
+            risk_components['radon'] = radon_risk
+            possible_issues.append(
+                f"Elevated indoor radon — {state.title()} avg {radon_bq:.0f} Bq/m³ "
+                f"(national avg 42 Bq/m³). Risk: +{radon_risk*100:.0f}% lung cancer "
+                f"(WHO Radon Handbook 2009; BARC India 2011)"
+            )
+            method_used.append(f"Indoor Radon (BARC India / WHO 2009, {radon_bq:.0f} Bq/m³)")
+
         # ── Combine ───────────────────────────────────────────────────────────
+        # Occupational + radon are additive to base risk (independent pathways)
         # If GOLD spirometry present, it anchors the score (60% weight)
         if fev1_risk > 0:
             base_risk = 0.60 * fev1_risk + 0.40 * (
@@ -359,6 +453,10 @@ class LungsModel(BaseOrganModel):
             # Add asthma/COPD risk directly — values already ARE the risk contributions
             base_risk += risk_components.get('asthma', 0)         # 0.18 if present
             base_risk += risk_components.get('copd_diagnosed', 0) # 0.40 if present
+
+        # Occupational dust/fume and radon are independent additive risks
+        # (act via different biological pathways than smoking/AQI)
+        base_risk = min(1.0, base_risk + occ_risk + radon_risk)
 
         # Inhaler/corticosteroid medications reduce effective risk
         meds_lower = [m.lower() for m in medications]

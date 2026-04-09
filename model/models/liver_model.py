@@ -31,6 +31,37 @@ def _load_lpd():
     return _lpd_bundle
 
 
+def apri_score(ast, platelets, ast_uln=40.0):
+    """
+    APRI — AST-to-Platelet Ratio Index
+    Wai CT et al., Hepatology 2003;38:518-526 — Hepatitis B/C + NAFLD validation
+    Used alongside FIB-4 to increase specificity for significant fibrosis.
+    ast_uln = Upper Limit of Normal for AST (40 U/L standard lab reference)
+    Platelets in 10^9/L.
+
+    Cutoffs (AASLD/EASL validated):
+      <0.5   → Low fibrosis risk (NPV 86%)
+      0.5–1.0→ Indeterminate
+      >1.0   → Significant fibrosis (F2+, PPV 61%)
+      >2.0   → Probable cirrhosis (PPV 62–91%)
+    India relevance: validated in Indian HBV/HCV patients (Kumada 2011; Prasad 2012)
+    """
+    if not all([ast, platelets]):
+        return None, None
+    try:
+        apri = (float(ast) / float(ast_uln)) / (float(platelets) / 100.0)
+        if apri < 0.5:
+            return round(apri, 3), 0.06    # Low risk
+        elif apri < 1.0:
+            return round(apri, 3), 0.25    # Indeterminate
+        elif apri < 2.0:
+            return round(apri, 3), 0.55    # Significant fibrosis
+        else:
+            return round(apri, 3), 0.78    # Probable cirrhosis
+    except Exception:
+        return None, None
+
+
 def fib4_index(age, ast, alt, platelets):
     """
     FIB-4 Index — Sterling RK et al., Hepatology 2006;43(6):1317-1325
@@ -222,11 +253,25 @@ class LiverModel(BaseOrganModel):
         fib4_score  = None
         lfs_score   = None
 
-        # Strategy 1: FIB-4
+        # Strategy 1a: FIB-4
         fib4_score, fib4_risk = fib4_index(age, ast, alt, platelets)
         if fib4_risk is not None:
             base_risk   = fib4_risk
             method_used = "fib4_index"
+
+        # Strategy 1b: APRI (4th ensemble signal when AST+platelets available)
+        # Wai CT et al., Hepatology 2003;38:518-526
+        # Averaged with FIB-4 when both available — improves specificity for fibrosis
+        apri_val, apri_risk = apri_score(ast, platelets)
+        if apri_risk is not None and fib4_risk is not None:
+            # Both available: average the two formula risks (equal clinical weight)
+            base_risk   = round((fib4_risk + apri_risk) / 2.0, 3)
+            method_used = "fib4_apri_index"
+        elif apri_risk is not None and base_risk is None:
+            base_risk   = apri_risk
+            method_used = "apri_index"
+        else:
+            apri_val = None
 
         # Strategy 2: ML ensemble (Turkish NASH 60% + ILPD Indian 40%)
         turkish_ml = None
