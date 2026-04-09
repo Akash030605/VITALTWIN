@@ -30,6 +30,23 @@ def _load_lpd():
             pass
     return _lpd_bundle
 
+# ── Load NHANES liver model (9,473 rows, AUC 0.900) ──────────────────────────
+# Source: CDC NHANES (National Health and Nutrition Examination Survey)
+# Features: age, gender, albumin, AST/ALT ratio
+# Target: Liver_Risk_Score >= 2 (moderate-high disease, ~15% prevalence)
+_NHANES_PATH = Path(__file__).parent.parent / "models" / "nhanes_liver_ml.pkl"
+_nhanes_bundle = None
+
+def _load_nhanes():
+    global _nhanes_bundle
+    if _nhanes_bundle is None and _NHANES_PATH.exists():
+        try:
+            with open(_NHANES_PATH, "rb") as f:
+                _nhanes_bundle = pickle.load(f)
+        except Exception:
+            pass
+    return _nhanes_bundle
+
 
 def apri_score(ast, platelets, ast_uln=40.0):
     """
@@ -110,7 +127,8 @@ class LiverModel(BaseOrganModel):
         super().__init__("liver")
         self.load_model()          # Turkish NASH model (60% weight)
         self._load_ilpd_model()    # Indian ILPD model (40% weight)
-        self._lpd_bundle = _load_lpd()   # LPD 30,691-row model (new third signal)
+        self._lpd_bundle    = _load_lpd()       # LPD 30,691-row model (third signal)
+        self._nhanes_bundle = _load_nhanes()    # NHANES 9,473-row model (fourth signal)
 
         self.liver_conditions = {
             "Fatty Liver / NAFLD":     (["fatty liver","nafld","nash","hepatic steatosis"], 0.28,
@@ -284,6 +302,22 @@ class LiverModel(BaseOrganModel):
         if ast and alt:
             ilpd_ml = self._ilpd_risk(data, age, bmi, ast, alt, albumin)
 
+        # ── NHANES signal (9,473 rows, AUC 0.900) ────────────────────────────
+        # Source: CDC NHANES — age, gender, albumin, AST/ALT ratio
+        # Target: Liver_Risk_Score >= 2 (moderate-high disease, ~15% prevalence)
+        nhanes_ml = None
+        nhb = self._nhanes_bundle
+        if nhb is not None and albumin:
+            try:
+                p = profile
+                g_enc_n = 1.0 if p.get("Gender", "Male") == "Male" else 0.0
+                alb_v_n = float(albumin or 4.0)
+                ast_alt_n = float(ast_alt) if ast and alt else 1.0
+                fv_nhanes = [float(age), g_enc_n, alb_v_n, ast_alt_n]
+                nhanes_ml = float(nhb["model"].predict_proba([fv_nhanes])[0][1])
+            except Exception:
+                nhanes_ml = None
+
         # ── LPD signal (30,691 rows, AUC 0.998) ──────────────────────────────
         lpd_ml = None
         lpd_b  = self._lpd_bundle
@@ -321,24 +355,40 @@ class LiverModel(BaseOrganModel):
             except Exception:
                 lpd_ml = None
 
-        # ── Three-way ensemble: Turkish + ILPD + LPD ─────────────────────────
-        if turkish_ml is not None and ilpd_ml is not None and lpd_ml is not None:
-            # Rebalanced: Turkish 35% (biopsy), ILPD 25% (India 583), LPD 40% (India 30K)
-            combined_ml = 0.35 * turkish_ml + 0.25 * ilpd_ml + 0.40 * lpd_ml
+        # ── Multi-model ensemble: Turkish + ILPD + LPD + NHANES ─────────────
+        # Weights: Turkish 30% (biopsy-confirmed NASH), ILPD 20% (India 583),
+        #          LPD 35% (India 30K, highest N), NHANES 15% (CDC 9K, demographics)
+        # NHANES uses only age/gender/albumin/AST:ALT — available even without full labs
+        n_models = sum(x is not None for x in [turkish_ml, ilpd_ml, lpd_ml, nhanes_ml])
+        if n_models >= 3 and lpd_ml is not None:
+            if turkish_ml is not None and ilpd_ml is not None and nhanes_ml is not None:
+                combined_ml = 0.30*turkish_ml + 0.20*ilpd_ml + 0.35*lpd_ml + 0.15*nhanes_ml
+                ml_tag = "turkish_ilpd_lpd_nhanes"
+            elif nhanes_ml is not None:
+                combined_ml = 0.38*turkish_ml + 0.24*ilpd_ml + 0.38*lpd_ml if (turkish_ml and ilpd_ml) else 0.50*lpd_ml + 0.50*nhanes_ml
+                ml_tag = "lpd_nhanes_ensemble"
+            else:
+                combined_ml = 0.35*turkish_ml + 0.25*ilpd_ml + 0.40*lpd_ml if (turkish_ml and ilpd_ml) else lpd_ml
+                ml_tag = "turkish_ilpd_lpd"
             if base_risk is not None:
                 base_risk   = 0.60 * base_risk + 0.40 * combined_ml
-                method_used = "fib4_turkish_ilpd_lpd_ensemble"
+                method_used = f"fib4_{ml_tag}_ensemble"
             else:
                 base_risk   = combined_ml
-                method_used = "turkish_ilpd_lpd_ensemble"
+                method_used = f"{ml_tag}_ensemble"
         elif turkish_ml is not None and ilpd_ml is not None:
             combined_ml = 0.60 * turkish_ml + 0.40 * ilpd_ml
+            if nhanes_ml is not None:
+                combined_ml = 0.50*turkish_ml + 0.30*ilpd_ml + 0.20*nhanes_ml
+                ml_tag = "turkish_ilpd_nhanes"
+            else:
+                ml_tag = "turkish_ilpd"
             if base_risk is not None:
                 base_risk   = 0.60 * base_risk + 0.40 * combined_ml
-                method_used = "fib4_ilpd_turkish_ensemble"
+                method_used = f"fib4_{ml_tag}_ensemble"
             else:
                 base_risk   = combined_ml
-                method_used = "ilpd_turkish_ensemble"
+                method_used = f"{ml_tag}_ensemble"
         elif turkish_ml is not None:
             if base_risk is not None:
                 base_risk   = 0.60 * base_risk + 0.40 * turkish_ml
@@ -353,6 +403,9 @@ class LiverModel(BaseOrganModel):
             else:
                 base_risk   = ilpd_ml
                 method_used = "ml_model_ilpd_indian"
+        elif nhanes_ml is not None and base_risk is None:
+            base_risk   = nhanes_ml
+            method_used = "nhanes_ml_only"
 
         # Strategy 3: NAFLD-LFS
         if base_risk is None:

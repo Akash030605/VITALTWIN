@@ -1,0 +1,289 @@
+{
+  "_meta": {
+    "source": "RNTCP/NTEP Annual Report, Ministry of Health & Family Welfare, India",
+    "files": [
+      "2.10_TB_Diabetes.csv",
+      "2.11_TB_Tobacco.csv",
+      "2.12_TB_Alcohol.csv"
+    ],
+    "note": "TB comorbidity percentages by Indian state. Used to adjust lung model TB risk by geography.",
+    "india_total": {
+      "tb_diabetes_pct": 91.5,
+      "tb_tobacco_pct": 11.5,
+      "tb_alcohol_pct": 7.2
+    },
+    "citation": "Jeon CY, Murray MB. Diabetes mellitus increases the risk of active tuberculosis. PLoS Med 2008;5(7):e152. doi:10.1371/journal.pmed.0050152"
+  },
+  "states": {
+    "andaman_and_nicobar_islands": {
+      "state_name": "Andaman & Nicobar Islands",
+      "tb_diabetes_pct": 95.1,
+      "tb_tobacco_pct": 90.9,
+      "tb_alcohol_pct": 90.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "andhra_pradesh": {
+      "state_name": "Andhra Pradesh",
+      "tb_diabetes_pct": 98.9,
+      "tb_tobacco_pct": 96.8,
+      "tb_alcohol_pct": 96.2,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "arunachal_pradesh": {
+      "state_name": "Arunachal Pradesh",
+      "tb_diabetes_pct": 79.0,
+      "tb_tobacco_pct": 74.9,
+      "tb_alcohol_pct": 74.4,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "assam": {
+      "state_name": "Assam",
+      "tb_diabetes_pct": 81.2,
+      "tb_tobacco_pct": 71.4,
+      "tb_alcohol_pct": 70.8,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "bihar": {
+      "state_name": "Bihar",
+      "tb_diabetes_pct": 77.1,
+      "tb_tobacco_pct": 48.5,
+      "tb_alcohol_pct": 48.2,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "chandigarh": {
+      "state_name": "Chandigarh",
+      "tb_diabetes_pct": 94.6,
+      "tb_tobacco_pct": 94.0,
+      "tb_alcohol_pct": 93.4,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "chhattisgarh": {
+      "state_name": "Chhattisgarh",
+      "tb_diabetes_pct": 91.0,
+      "tb_tobacco_pct": 80.4,
+      "tb_alcohol_pct": 78.5,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "dadra_and_nagar_haveli_and_daman_and_diu": {
+      "state_name": "Dadra and Nagar Haveli and Daman and Diu",
+      "tb_diabetes_pct": 99.2,
+      "tb_tobacco_pct": 11.4,
+      "tb_alcohol_pct": 10.0,
+      "lung_tb_risk_multiplier": 1.15
+    },
+    "delhi": {
+      "state_name": "Delhi",
+      "tb_diabetes_pct": 80.8,
+      "tb_tobacco_pct": 60.4,
+      "tb_alcohol_pct": 59.3,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "goa": {
+      "state_name": "Goa",
+      "tb_diabetes_pct": 93.9,
+      "tb_tobacco_pct": 76.2,
+      "tb_alcohol_pct": 76.7,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "gujarat": {
+      "state_name": "Gujarat",
+      "tb_diabetes_pct": 96.0,
+      "tb_tobacco_pct": 94.5,
+      "tb_alcohol_pct": 93.8,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "haryana": {
+      "state_name": "Haryana",
+      "tb_diabetes_pct": 94.1,
+      "tb_tobacco_pct": 88.0,
+      "tb_alcohol_pct": 86.9,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "himachal_pradesh": {
+      "state_name": "Himachal Pradesh",
+      "tb_diabetes_pct": 99.0,
+      "tb_tobacco_pct": 97.4,
+      "tb_alcohol_pct": 96.6,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "jammu_and_kashmir": {
+      "state_name": "Jammu & Kashmir",
+      "tb_diabetes_pct": 95.4,
+      "tb_tobacco_pct": 90.0,
+      "tb_alcohol_pct": 89.3,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "jharkhand": {
+      "state_name": "Jharkhand",
+      "tb_diabetes_pct": 88.8,
+      "tb_tobacco_pct": 71.0,
+      "tb_alcohol_pct": 68.9,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "karnataka": {
+      "state_name": "Karnataka",
+      "tb_diabetes_pct": 95.0,
+      "tb_tobacco_pct": 88.1,
+      "tb_alcohol_pct": 87.1,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "kerala": {
+      "state_name": "Kerala",
+      "tb_diabetes_pct": 93.3,
+      "tb_tobacco_pct": 84.1,
+      "tb_alcohol_pct": 83.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "ladakh": {
+      "state_name": "Ladakh",
+      "tb_diabetes_pct": 91.3,
+      "tb_tobacco_pct": 88.7,
+      "tb_alcohol_pct": 87.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "lakshadweep": {
+      "state_name": "Lakshadweep",
+      "tb_diabetes_pct": 95.5,
+      "tb_tobacco_pct": 100.0,
+      "tb_alcohol_pct": 100.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "madhya_pradesh": {
+      "state_name": "Madhya Pradesh",
+      "tb_diabetes_pct": 90.7,
+      "tb_tobacco_pct": 53.8,
+      "tb_alcohol_pct": 52.3,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "maharashtra": {
+      "state_name": "Maharashtra",
+      "tb_diabetes_pct": 96.7,
+      "tb_tobacco_pct": 79.5,
+      "tb_alcohol_pct": 77.8,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "manipur": {
+      "state_name": "Manipur",
+      "tb_diabetes_pct": 74.3,
+      "tb_tobacco_pct": 70.2,
+      "tb_alcohol_pct": 70.3,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "meghalaya": {
+      "state_name": "Meghalaya",
+      "tb_diabetes_pct": 76.8,
+      "tb_tobacco_pct": 75.9,
+      "tb_alcohol_pct": 74.3,
+      "lung_tb_risk_multiplier": 1.263
+    },
+    "mizoram": {
+      "state_name": "Mizoram",
+      "tb_diabetes_pct": 98.6,
+      "tb_tobacco_pct": 97.9,
+      "tb_alcohol_pct": 97.1,
+      "lung_tb_risk_multiplier": 1.181
+    },
+    "nagaland": {
+      "state_name": "Nagaland",
+      "tb_diabetes_pct": 84.1,
+      "tb_tobacco_pct": 83.7,
+      "tb_alcohol_pct": 83.2,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "odisha": {
+      "state_name": "Odisha",
+      "tb_diabetes_pct": 96.3,
+      "tb_tobacco_pct": 94.4,
+      "tb_alcohol_pct": 93.6,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "puducherry": {
+      "state_name": "Puducherry",
+      "tb_diabetes_pct": 99.0,
+      "tb_tobacco_pct": 97.1,
+      "tb_alcohol_pct": 96.2,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "punjab": {
+      "state_name": "Punjab",
+      "tb_diabetes_pct": 91.5,
+      "tb_tobacco_pct": 83.7,
+      "tb_alcohol_pct": 82.8,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "rajasthan": {
+      "state_name": "Rajasthan",
+      "tb_diabetes_pct": 90.1,
+      "tb_tobacco_pct": 79.1,
+      "tb_alcohol_pct": 78.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "sikkim": {
+      "state_name": "Sikkim",
+      "tb_diabetes_pct": 97.5,
+      "tb_tobacco_pct": 70.5,
+      "tb_alcohol_pct": 73.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "tamil_nadu": {
+      "state_name": "Tamil Nadu",
+      "tb_diabetes_pct": 96.6,
+      "tb_tobacco_pct": 87.1,
+      "tb_alcohol_pct": 86.6,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "telangana": {
+      "state_name": "Telangana",
+      "tb_diabetes_pct": 93.7,
+      "tb_tobacco_pct": 92.8,
+      "tb_alcohol_pct": 92.4,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "tripura": {
+      "state_name": "Tripura",
+      "tb_diabetes_pct": 94.4,
+      "tb_tobacco_pct": 68.2,
+      "tb_alcohol_pct": 67.0,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "uttar_pradesh": {
+      "state_name": "Uttar Pradesh",
+      "tb_diabetes_pct": 91.6,
+      "tb_tobacco_pct": 66.9,
+      "tb_alcohol_pct": 64.9,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "uttarakhand": {
+      "state_name": "Uttarakhand",
+      "tb_diabetes_pct": 96.1,
+      "tb_tobacco_pct": 94.4,
+      "tb_alcohol_pct": 93.2,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "west_bengal": {
+      "state_name": "West Bengal",
+      "tb_diabetes_pct": 92.6,
+      "tb_tobacco_pct": 85.6,
+      "tb_alcohol_pct": 83.9,
+      "lung_tb_risk_multiplier": 1.18
+    },
+    "india_national": {
+      "tb_diabetes_pct": 91.5,
+      "tb_tobacco_pct": 75.5,
+      "tb_alcohol_pct": 74.2,
+      "lung_tb_risk_multiplier": 1.03
+    },
+    "dadra_and_nagar_haveli": {
+      "tb_diabetes_pct": 99.2,
+      "tb_tobacco_pct": 65.7,
+      "tb_alcohol_pct": 67.3,
+      "lung_tb_risk_multiplier": 1.03
+    }
+  },
+  "tb_comorbidity_sources": {
+    "tb_diabetes": "NTEP Annual Report 2021-22 \u2014 Table 2.10: TB-DM % of notified patients by state",
+    "tb_tobacco": "NTEP Annual Report 2021-22 \u2014 Table 2.11: TB-Tobacco % by state",
+    "tb_alcohol": "NTEP Annual Report 2021-22 \u2014 Table 2.12: TB-Alcohol % by state",
+    "note": "TB-DM comorbidity: 25\u201335% of TB patients in India have DM (ICMR/WHO). High TB-DM states get +0.03 lung_tb_risk_multiplier adjustment. Useful for diabetes model: DM worsens TB outcome and vice versa."
+  }
+}
