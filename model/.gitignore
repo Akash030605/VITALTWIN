@@ -52,8 +52,8 @@ threadpoolctl.py
 # Loose wheel files
 scipy-1.17.1-cp311-cp311-win_amd64.whl
 
-# Data files (large datasets — keep structure, ignore content)
-data/
+# Data files (large datasets — keep structure, ignore heavy content)
+data/**
 !data/.gitkeep
 
 # Trained model files (large binaries) — ignore all binary artifacts in models/
