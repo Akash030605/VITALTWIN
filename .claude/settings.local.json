@@ -1,9 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(npm run:*)",
-      "Bash(xargs sed:*)"
+      "Bash(du -sh \"d:/WebDevlopement/VitalTwin/model/data/\"*/)",
+      "Bash(python -c ':*)",
+      "Bash(python smoke_test.py)"
     ]
   }
 }

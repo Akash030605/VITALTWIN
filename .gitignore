@@ -1,41 +1,39 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ================================
+# Root .gitignore - VitalTwin
+# ================================
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+# OS files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build output logs
+build_output.txt
+
+# Environment files
+.env
+.env.local
+.env.*.local
 *.pem
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Logs
+*.log
+logs/
 
-# env files (can opt-in for committing if needed)
-.env*
+# Claude AI context (not needed in repo)
+.claude/
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Ignore both subfolders' specific artifacts (handled in their own .gitignore)
+client/node_modules/
+client/.next/
+model/__pycache__/
+model/*.pyc

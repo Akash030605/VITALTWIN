@@ -37,9 +37,9 @@ def _load_heart_ml_v2():
                 _heart_ml_v2_bundle = pickle.load(f)
             # Cap AUC display — Cleveland data shows 1.0 due to small dataset
             auc = min(0.90, float(_heart_ml_v2_bundle.get('cv_auc_mean', 0.90)))
-            print(f"✅ Loaded heart ML v2 (Cleveland UCI, AUC~{auc})")
+            print(f"[OK] Loaded heart ML v2 (Cleveland UCI, AUC~{auc})")
         except Exception as e:
-            print(f"⚠️  Could not load heart ML v2: {e}")
+            print(f"[WARN] Could not load heart ML v2: {e}")
     return _heart_ml_v2_bundle
 
 
@@ -388,7 +388,12 @@ class HeartModel(BaseOrganModel):
                 if self._is_hypertensive(health):
                     combined_or *= get_or('hypertension', 1.91)
                 bmi_v = float(bmi)
-                if bmi_v > 25:
+                # India obesity threshold: BMI >= 27.5 (WHO Asia-Pacific 2004)
+                # INTERHEART used waist-hip ratio; BMI 27.5 is the India-specific
+                # proxy for abdominal obesity (not 25, which over-triggers in overweight)
+                # Source: WHO Expert Consultation, Lancet 2004;363:157-163
+                #         Yusuf S et al., Lancet 2004;364:937-952 (South Asia subgroup)
+                if bmi_v >= 27.5:
                     combined_or *= get_or('abdominal_obesity', 1.62)
                 if health.get('Stress') in ('High', 'Very High'):
                     combined_or *= get_or('psychosocial', 2.67)
@@ -408,8 +413,12 @@ class HeartModel(BaseOrganModel):
                             break
                 ih_risk = 1.0 - 1.0 / (1.0 + pop_base * (combined_or - 1.0))
                 ih_risk = min(0.95, max(0.01, ih_risk))
-                # Blend: 80% primary + 20% INTERHEART India
-                base_risk = 0.80 * base_risk + 0.20 * ih_risk
+                # Blend: 70% primary PCE + 30% INTERHEART India
+                # Raised from 20% to 30%: INTERHEART India (15K pts, Lancet 2004)
+                # has stronger India-specific calibration than PCE White American coefficients.
+                # 30% is still conservative — PCE remains dominant (70%) for clinical validity.
+                # Source: Yusuf S et al., Lancet 2004;364:937-952 (South Asia subgroup, n=1,732)
+                base_risk = 0.70 * base_risk + 0.30 * ih_risk
                 method_used += "+interheart_india"
             except Exception:
                 pass
@@ -447,11 +456,81 @@ class HeartModel(BaseOrganModel):
             dist_priors   = {}
 
         # ── Combine everything ────────────────────────────────────────────
-        final_risk = min(1.0, base_risk + condition_risk * 0.5 + lifestyle_penalty + prior_adj)
+        # Cap at 0.80 — maps to health_score=20 at worst.
+        # Risk=1.0 (score=0) means dead — not valid for living patients.
+        # A living person with worst-case CVD risk profile gets ~20/100.
+        final_risk = min(0.80, base_risk + condition_risk * 0.5 + lifestyle_penalty + prior_adj)
 
-        # Hard floors for severe habits
-        if health.get("Smoking") == "Daily" and health.get("Alcohol") == "Daily":
-            final_risk = max(final_risk, 0.35)
+        # ── Age-based minimum floor — CONDITIONAL on lab availability ────────
+        # CRITICAL FIX: The old hard floor map forced age 40+ to minimum 10% risk
+        # even when Framingham PCE (with full labs) computed 3-5% for excellent labs.
+        # This is clinically WRONG — Framingham PCE is the validated gold standard
+        # and its output for a 40yo with perfect cholesterol/BP/no DM/no smoking
+        # is ~3-5% which is correct (NPV validated on 24,626 patients).
+        #
+        # New approach:
+        # CASE 1 (no labs): Use population floors — these represent the minimum
+        #   honest risk for someone whose labs we don't know.
+        #   Source: GBD 2019 India (Lancet 2020;396:1204-1222)
+        # CASE 2 (with full labs): Use soft floors only — Framingham PCE output
+        #   for a perfectly healthy person is already the correct clinical answer.
+        #   Soft floor = 1-2% (biological minimum — even the healthiest person
+        #   has some residual cardiovascular risk).
+        #   Source: Goff DC Jr. et al., Circulation 2014 — PCE baseline risk
+
+        has_full_labs = bool(total_chol and hdl_chol and sbp)
+        has_partial_labs = bool(total_chol or sbp)
+
+        if has_full_labs:
+            # Case 2: Framingham PCE ran with real data — trust the formula
+            # Only apply a minimal biological floor (not a population average)
+            # A 19-year-old female non-smoker non-diabetic normal BP/chol → ~1% is correct
+            soft_floor_map = [
+                (65, 0.04), (55, 0.025), (45, 0.015), (35, 0.008), (0, 0.005)
+            ]
+            age_floor = 0.005
+            for age_threshold, floor_val in soft_floor_map:
+                if age >= age_threshold:
+                    age_floor = floor_val
+                    break
+            if gender == 'Female':
+                age_floor *= 0.6  # women have lower baseline even with SA correction
+        elif has_partial_labs:
+            # Case 2b: partial labs — moderate floors, somewhat informed
+            soft_floor_map = [
+                (60, 0.06), (50, 0.04), (40, 0.03), (35, 0.015), (0, 0.008)
+            ]
+            age_floor = 0.008
+            for age_threshold, floor_val in soft_floor_map:
+                if age >= age_threshold:
+                    age_floor = floor_val
+                    break
+            if gender == 'Female':
+                age_floor *= 0.5
+        else:
+            # Case 1: No labs — use population floors (honest "we don't know your labs")
+            # GBD 2019 India: age-specific CVD event rates for Indian males
+            # Floor is honest population baseline, not a clinical diagnosis
+            nolabs_floor_map = [
+                (65, 0.34), (60, 0.28), (55, 0.22), (50, 0.17),
+                (45, 0.13), (40, 0.07), (35, 0.025), (30, 0.015)
+            ]
+            age_floor = 0.008  # <30yo
+            for age_threshold, floor_val in nolabs_floor_map:
+                if age >= age_threshold:
+                    age_floor = floor_val
+                    break
+            # Female: ~50% lower baseline than male (GBD 2019 India sex-specific rates)
+            if gender == 'Female':
+                age_floor *= 0.5
+
+        final_risk = max(final_risk, age_floor)
+
+        # Hard floors for severe habits — only when no labs to anchor score
+        # When labs are present, Framingham already captures smoking and diabetes
+        if not has_full_labs:
+            if health.get("Smoking") == "Daily" and health.get("Alcohol") == "Daily":
+                final_risk = max(final_risk, 0.35)
 
         # ── Build output ──────────────────────────────────────────────────
         risk_level = self.get_risk_level(final_risk)
@@ -461,6 +540,10 @@ class HeartModel(BaseOrganModel):
             "sleep":    health.get("Sleep", 7),
             "stress":   health.get("Stress", "Medium"),
         }
+
+        # Inject context so _get_recommendations can personalise by actual age/activity
+        health["_age"]      = age
+        health["_activity"] = profile.get("ActivityLevel", "Moderate")
 
         recommendations = self._get_recommendations(risk_level, detected_conditions,
                                                      health, sbp, dbp)
@@ -549,31 +632,147 @@ class HeartModel(BaseOrganModel):
         return min(risk, 0.90)
 
     def _get_recommendations(self, risk_level, detected, health, sbp, dbp):
-        base = {
-            "GREEN":  ["Maintain 150 min/week moderate aerobic exercise",
-                       "Mediterranean or DASH diet reduces CVD risk by 25%",
-                       "Annual blood pressure and cholesterol check"],
-            "YELLOW": ["Target BP < 130/80 mmHg — reduces heart attack risk by 25%",
-                       "Start 30-min brisk walk daily, 5 days/week",
-                       "Limit saturated fat (<7% calories) and trans fat (0%)",
-                       "Get HbA1c and fasting glucose tested if not done in last year"],
-            "RED":    ["URGENT: Consult cardiologist within 4 weeks",
-                       "Take all prescribed medications without missing doses",
-                       "Monitor blood pressure twice daily, log results",
-                       "Cardiac rehabilitation if recommended by doctor"],
-        }.get(risk_level, [])
-        extras = []
+        """
+        Fully personalized recommendations referencing the user's actual numbers.
+        No generic pamphlet text — every line uses the user's real data.
+        """
+        recs = []
+        age  = health.get("_age", 45)  # injected by calculate_risk
+        bmi  = health.get("Bmi") or health.get("bmi") or 0
+        total_chol = health.get("TotalCholesterol")
+        hdl        = health.get("HDLCholesterol")
+        smoking    = health.get("Smoking", "Never")
+        years_smoked = health.get("YearsSmoking", health.get("YearsSmoked", 0)) or 0
+        cpd          = health.get("CigarettesPerDay", 0) or 0
+        tobacco_type = health.get("TobaccoType", "cigarette")
+        pack_years   = health.get("PackYears") or ((cpd / 20.0) * years_smoked if cpd and years_smoked else None)
+        bidi         = tobacco_type and "bidi" in tobacco_type.lower()
+        alcohol      = health.get("Alcohol", "Never")
+        sleep_h      = health.get("Sleep")
+        stress       = health.get("Stress", "Medium")
+        activity     = health.get("_activity", "Moderate")
+        hba1c        = health.get("HbA1c")
+        fasting_gluc = health.get("FastingGlucose")
+
+        # 1. Smoking — most impactful, most personalised
+        if smoking == "Daily":
+            py_str = f"{pack_years:.0f} pack-years" if pack_years else f"~{max(1,years_smoked)} years of daily smoking"
+            bidi_note = " (bidi = 3× more tar than cigarettes — risk is higher)" if bidi else ""
+            bp_note = f" Your BP {sbp}/{dbp} will also drop 5–10 mmHg within 1 year of quitting." if sbp and int(sbp) >= 130 else ""
+            recs.append(
+                f"Quit smoking — you have {py_str}{bidi_note}. Each year of daily smoking "
+                f"raises your heart attack risk by ~3%. Quitting now cuts CVD risk by 50% within 1 year "
+                f"(Hackshaw BMJ 2018).{bp_note}"
+            )
+        elif smoking == "Occasional":
+            recs.append(
+                "Occasional smoking still raises CVD risk by 30% compared to never-smokers — "
+                "there is no 'safe' level of tobacco use (Hackshaw BMJ 2018). "
+                "NRT patches can help cut frequency before quitting fully."
+            )
+
+        # 2. Blood pressure — use actual numbers
+        if sbp and dbp:
+            sbp_i, dbp_i = int(sbp), int(dbp)
+            if sbp_i >= 160 or dbp_i >= 100:
+                recs.append(
+                    f"Your BP {sbp_i}/{dbp_i} mmHg is Stage 2 hypertension — this alone doubles your "
+                    f"heart attack risk. Every 10 mmHg reduction cuts CVD risk by 20% (SPRINT 2015). "
+                    f"Start antihypertensive therapy if not already on it; consult a physician this week."
+                )
+            elif sbp_i >= 140 or dbp_i >= 90:
+                recs.append(
+                    f"BP {sbp_i}/{dbp_i} mmHg — Stage 1 hypertension. Target <130/80 mmHg. "
+                    f"Reducing salt to <5g/day lowers BP by 4–5 mmHg; 30-min daily walk lowers it by 3–5 mmHg. "
+                    f"Every 10 mmHg reduction = 20% lower heart attack risk."
+                )
+            elif sbp_i >= 130:
+                recs.append(
+                    f"BP {sbp_i}/{dbp_i} mmHg — elevated (pre-hypertension). "
+                    f"Reduce sodium, increase potassium (banana, coconut water), and walk 30 min daily. "
+                    f"Target: <130/80 mmHg to prevent progression to full hypertension."
+                )
+
+        # 3. Cholesterol — actual numbers
+        if total_chol:
+            tc = float(total_chol)
+            if tc >= 240:
+                hdl_note = f" (HDL {hdl} mg/dL — {'protective' if float(hdl)>=60 else 'low — raises net risk'})" if hdl else ""
+                recs.append(
+                    f"Total cholesterol {tc:.0f} mg/dL{hdl_note} — high (≥240 = increased CVD risk). "
+                    f"Target: <200 mg/dL. Replace saturated fats (ghee, butter, red meat) with "
+                    f"mustard/olive oil. Statins reduce CVD events by 25–35% if diet alone is insufficient "
+                    f"(CTT Collaboration 2012)."
+                )
+            elif tc >= 200:
+                recs.append(
+                    f"Total cholesterol {tc:.0f} mg/dL — borderline high. "
+                    f"Reducing refined carbs (maida, white rice) and adding 40g oats daily "
+                    f"can lower LDL by 5–10% (Anderson JW 1990)."
+                )
+
+        # 4. Diabetes / glucose
+        if hba1c and float(hba1c) >= 6.5:
+            hba1c_f = float(hba1c)
+            recs.append(
+                f"HbA1c {hba1c_f}% — diabetes raises heart attack risk 2.4× (INTERHEART 2004). "
+                f"For every 1% HbA1c reduction, CVD risk drops ~14% (UKPDS 35). "
+                f"Target HbA1c <7% with diet, metformin, and exercise."
+            )
+        elif fasting_gluc and float(fasting_gluc) >= 100:
+            recs.append(
+                f"Fasting glucose {fasting_gluc} mg/dL — pre-diabetes range. "
+                f"Losing 5–7% body weight and 150 min/week exercise reduces diabetes progression by 58% "
+                f"(DPP Trial 2002), which protects your heart long-term."
+            )
+
+        # 5. Physical activity
+        if activity == "Sedentary":
+            recs.append(
+                "Sedentary lifestyle raises CVD risk by 35% (Biswas 2015). "
+                "Start with 10-min walks twice daily → build to 30-min brisk walk 5 days/week. "
+                "Even 15 min/day reduces all-cause mortality by 14% (Wen Lancet 2011)."
+            )
+
+        # 6. Alcohol
+        if alcohol == "Daily":
+            recs.append(
+                "Daily alcohol raises BP by 4–5 mmHg, increases AF risk, and adds empty calories. "
+                "Cutting from daily to occasional reduces heart risk by ~20% (GBD 2016). "
+                "Target: ≤2 standard drinks/day for men, ≤1 for women."
+            )
+
+        # 7. Risk level specific
+        if risk_level == "RED" and len(recs) < 5:
+            recs.append(
+                "HIGH RISK: Consult a cardiologist within 2–4 weeks. "
+                "Ask for: lipid panel, ECG, and echo if not done in the last year. "
+                "Take all prescribed medications without skipping — even one missed dose of a statin "
+                "increases clot risk."
+            )
+        elif risk_level == "GREEN" and len(recs) < 2:
+            recs.append(
+                "Your heart risk is low. Maintain it: annual BP + cholesterol check, "
+                "150 min/week aerobic exercise, and Mediterranean-style diet. "
+                "Family history of heart disease? — screen cholesterol from age 35."
+            )
+
+        # 8. Detected conditions
         for d in detected:
             if "Heart Failure" in d["condition"]:
-                extras += ["Weigh yourself daily — >2kg gain in 1 day = call doctor",
-                           "Fluid restriction may be advised — follow cardiologist guidance"]
+                recs.append("Weigh yourself daily — a >2 kg gain in 1 day means fluid retention: call your doctor.")
             if "Arrhythmia" in d["condition"]:
-                extras.append("Discuss anticoagulation with doctor if you have atrial fibrillation")
-        if health.get("Smoking") == "Daily":
-            extras.append("Quitting smoking cuts heart attack risk by 50% within 1 year")
-        if sbp and dbp and (int(sbp) >= 140 or int(dbp) >= 90):
-            extras.append(f"BP {sbp}/{dbp} mmHg is elevated — every 10mmHg reduction cuts risk by 20%")
-        return (base + extras)[:6]
+                recs.append("Atrial fibrillation detected in history — ask doctor about anticoagulation (stroke prevention).")
+
+        # Deduplicate and cap
+        seen = set()
+        unique = []
+        for r in recs:
+            key = r[:40]
+            if key not in seen:
+                seen.add(key)
+                unique.append(r)
+        return unique[:6]
 
     def _possible_issues(self, risk, health, total_chol, sbp):
         issues = []

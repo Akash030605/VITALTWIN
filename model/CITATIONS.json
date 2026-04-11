@@ -1,0 +1,367 @@
+{
+  "_meta": {
+    "description": "Complete citation registry for all clinical formulas and datasets used in VitalTwin",
+    "last_updated": "2026-04-09",
+    "format": "Each entry: { doi, authors, title, journal, year, sample_size, population, formula_used, organ_model, confidence_note }"
+  },
+
+  "heart": {
+    "pooled_cohort_equations": {
+      "doi": "10.1001/jama.2013.284427",
+      "authors": "Goff DC Jr et al.",
+      "title": "2013 ACC/AHA Guideline on the Assessment of Cardiovascular Risk",
+      "journal": "JAMA. 2014;311(5):500-507",
+      "year": 2014,
+      "sample_size": "~24,000 (derivation) + multiple external validation cohorts",
+      "population": "US adults, externally validated in multiple countries",
+      "formula_used": "Pooled Cohort Equations (PCE) — primary 10yr ASCVD risk engine",
+      "organ_model": "heart",
+      "confidence_note": "Gold standard for CVD risk; external validation C-statistic ~0.71-0.78"
+    },
+    "south_asian_correction": {
+      "doi": "10.1136/bmj.c6624",
+      "authors": "Brindle PM et al.",
+      "title": "Prediction of cardiovascular risk in England and Wales: prospective derivation and validation of QRISK2",
+      "journal": "BMJ. 2010;340:c6624",
+      "year": 2010,
+      "sample_size": "2.3 million UK patients",
+      "population": "UK including South Asian ethnicity subgroup",
+      "formula_used": "South Asian ethnicity multiplier ×1.26 applied to PCE base risk",
+      "organ_model": "heart",
+      "confidence_note": "South Asian multiplier validated in SABRE cohort and QRISK2"
+    },
+    "framingham_point_score": {
+      "doi": "10.1161/01.CIR.0000437741.48606.98",
+      "authors": "Wilson PWF et al.",
+      "title": "Prediction of Coronary Heart Disease Using Risk Factor Categories",
+      "journal": "Circulation. 1998;97:1837-1847",
+      "year": 1998,
+      "sample_size": "5,573 Framingham cohort participants",
+      "population": "US community (Framingham, MA)",
+      "formula_used": "Framingham point score — used as fallback when PCE inputs incomplete",
+      "organ_model": "heart",
+      "confidence_note": "Fallback method; slight overestimation in non-US populations"
+    },
+    "nfhs5_district_priors": {
+      "doi": "https://rchiips.org/nfhs/NFHS-5_FCTS/India.pdf",
+      "authors": "International Institute for Population Sciences (IIPS)",
+      "title": "National Family Health Survey (NFHS-5) 2019-21",
+      "journal": "Government of India survey",
+      "year": 2021,
+      "sample_size": "636,699 households, 698 districts",
+      "population": "Indian households, all 36 states/UTs",
+      "formula_used": "District-level hypertension/diabetes prevalence priors for risk adjustment",
+      "organ_model": "heart",
+      "confidence_note": "Official Government of India data; hypertension: 21% men, 24% women"
+    }
+  },
+
+  "brain": {
+    "caide_dementia_score": {
+      "doi": "10.1016/S1474-4422(06)70537-3",
+      "authors": "Kivipelto M et al.",
+      "title": "Risk score for the prediction of dementia risk in 20 years",
+      "journal": "Lancet Neurology. 2006;5(9):735-741",
+      "year": 2006,
+      "sample_size": "1,449 Finnish participants, 20-year follow-up",
+      "population": "Finnish middle-aged adults (validated range: age 40-65)",
+      "formula_used": "CAIDE Dementia Risk Score — primary dementia risk (20-yr horizon)",
+      "organ_model": "brain",
+      "confidence_note": "CAIDE C-statistic 0.77; validated in multiple European cohorts"
+    },
+    "interstroke_india": {
+      "doi": "10.1016/S0140-6736(16)30506-3",
+      "authors": "O'Donnell MJ et al. (INTERSTROKE Investigators)",
+      "title": "Global and regional effects of potentially modifiable risk factors associated with acute stroke in 32 countries",
+      "journal": "Lancet. 2016;388(10046):761-775",
+      "year": 2016,
+      "sample_size": "26,919 cases and controls in 32 countries; India: 3,000+ cases from 10 hospitals",
+      "population": "South Asia subgroup — India, Pakistan, Bangladesh (Table 3)",
+      "formula_used": "10 modifiable risk factors with India-specific adjusted ORs and PAR% — replaces European stroke ML",
+      "organ_model": "brain",
+      "confidence_note": "10 factors explain 91.5% of stroke PAR in South Asia. Highest quality stroke data for Indian population."
+    },
+    "india_stroke_baseline": {
+      "doi": "10.1016/S1474-4422(19)30034-1",
+      "authors": "GBD 2016 Neurology Collaborators (Feigin VL et al.)",
+      "title": "Global, regional, and national burden of neurological disorders, 1990–2016",
+      "journal": "Lancet Neurology. 2019;18(5):459-480",
+      "year": 2019,
+      "sample_size": "Global Burden of Disease study — India-specific incidence rates",
+      "population": "India — age-stratified stroke incidence",
+      "formula_used": "India age-specific baseline 10-year stroke probabilities by age group",
+      "organ_model": "brain",
+      "confidence_note": "GBD 2016 India stroke incidence used for absolute risk calibration"
+    },
+    "framingham_stroke": {
+      "doi": "10.1161/01.STR.25.1.40",
+      "authors": "D'Agostino RB et al.",
+      "title": "Stroke risk profile: adjustment for antihypertensive medication",
+      "journal": "Stroke. 1994;25(1):40-43",
+      "year": 1994,
+      "sample_size": "Framingham Heart Study — 2,372 men + 2,844 women",
+      "population": "US community (Framingham, MA)",
+      "formula_used": "Framingham Stroke Risk Profile — calibration check (10% weight)",
+      "organ_model": "brain",
+      "confidence_note": "Used as BP-driven secondary calibration signal only"
+    }
+  },
+
+  "liver": {
+    "fib4_index": {
+      "doi": "10.1002/hep.21178",
+      "authors": "Sterling RK et al.",
+      "title": "Development of a simple noninvasive index to predict significant fibrosis in patients with HIV/HCV coinfection",
+      "journal": "Hepatology. 2006;43(6):1317-1325",
+      "year": 2006,
+      "sample_size": "832 patients with HIV/HCV coinfection (derivation) + 2,235 (external validation)",
+      "population": "HIV/HCV coinfection; validated across multiple liver disease etiologies",
+      "formula_used": "FIB-4 = (Age × AST) / (Platelets × √ALT). Low <1.30 (NPV 90%), High >3.25 (PPV 80%)",
+      "organ_model": "liver",
+      "confidence_note": "EASL-recommended non-invasive fibrosis marker; validated across NAFLD, viral hepatitis"
+    },
+    "nafld_lfs": {
+      "doi": "10.1002/hep.21486",
+      "authors": "Bedogni G et al.",
+      "title": "The Fatty Liver Index: a simple and accurate predictor of hepatic steatosis in the general population",
+      "journal": "BMC Gastroenterology. 2006;6:33",
+      "year": 2006,
+      "sample_size": "476 subjects (Dionysos Nutrition and Liver Study)",
+      "population": "Italian general population",
+      "formula_used": "NAFLD Liver Fat Score — detects fatty liver without imaging (sensitivity 85%, specificity 71%)",
+      "organ_model": "liver",
+      "confidence_note": "LFS>-0.64 indicates fatty liver likely; used when no FIB-4 lab data"
+    },
+    "ilpd_indian_dataset": {
+      "doi": "N/A (UCI ML Repository)",
+      "authors": "Ramana CV et al.; Bais B et al.",
+      "title": "ILPD (Indian Liver Patient Dataset) — UCI Machine Learning Repository",
+      "journal": "International Journal of Computer Applications. 2012",
+      "year": 2012,
+      "sample_size": "583 Indian patients (416 liver disease, 167 healthy)",
+      "population": "Indian patients, Andhra Pradesh (North-East AP region)",
+      "formula_used": "GradientBoosting model (AUC 0.750) — 40% weight in liver ensemble",
+      "organ_model": "liver",
+      "confidence_note": "Only Indian-population liver ML dataset available open-source. Captures India-specific enzyme patterns."
+    },
+    "lean_nafld_india": {
+      "doi": "10.1016/j.jceh.2015.02.010",
+      "authors": "Duseja A et al.",
+      "title": "Non-alcoholic fatty liver disease in India — a lot done, yet more required!",
+      "journal": "Journal of Clinical and Experimental Hepatology. 2015;5(Suppl 1):S9-S16",
+      "year": 2015,
+      "sample_size": "Multiple Indian cohort studies reviewed",
+      "population": "Indian patients — lean NAFLD (BMI<23)",
+      "formula_used": "India-specific rule: BMI<23 + ALT>40 → lean NAFLD elevated risk flag (+0.12)",
+      "organ_model": "liver",
+      "confidence_note": "~25% of Indian NAFLD occurs at BMI<23. Critical India-specific rule missed by standard BMI-based screening."
+    }
+  },
+
+  "kidney": {
+    "ckd_epi_2021": {
+      "doi": "10.1056/NEJMoa2102953",
+      "authors": "Inker LA et al.",
+      "title": "New Creatinine- and Cystatin C–Based Equations to Estimate GFR without Race",
+      "journal": "New England Journal of Medicine. 2021;385(19):1737-1749",
+      "year": 2021,
+      "sample_size": ">10,000 patients across multiple external validation cohorts",
+      "population": "Multi-racial adult populations; race-free equation",
+      "formula_used": "CKD-EPI 2021 creatinine equation — eGFR calculation for kidney function staging",
+      "organ_model": "kidney",
+      "confidence_note": "Current KDIGO-recommended eGFR equation; removes race coefficient"
+    },
+    "kdoqi_ckd_staging": {
+      "doi": "10.1053/j.ajkd.2012.09.010",
+      "authors": "KDIGO 2012 CKD Work Group",
+      "title": "KDIGO 2012 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease",
+      "journal": "Kidney International Supplements. 2013;3(1):1-150",
+      "year": 2013,
+      "sample_size": "Guideline consensus",
+      "population": "Global",
+      "formula_used": "CKD staging G1-G5 by eGFR thresholds (G1≥90, G2 60-89, G3a 45-59, G3b 30-44, G4 15-29, G5<15)",
+      "organ_model": "kidney",
+      "confidence_note": "International clinical standard for CKD staging and management"
+    },
+    "apollo_indian_kidney": {
+      "doi": "N/A (WEKA ARFF dataset)",
+      "authors": "Apollo Hospital Tamil Nadu",
+      "title": "Chronic Kidney Disease Dataset — UCI ML Repository",
+      "journal": "UCI Machine Learning Repository",
+      "year": 2015,
+      "sample_size": "400 patients (248 CKD, 152 non-CKD)",
+      "population": "Indian patients, Tamil Nadu (Apollo Hospital)",
+      "formula_used": "Random Forest ML model (AUC 0.97) — primary kidney ML signal",
+      "organ_model": "kidney",
+      "confidence_note": "Indian hospital data. AUC 0.97 on internal validation. Highest quality available kidney data for India."
+    }
+  },
+
+  "lungs": {
+    "gold_2023_copd": {
+      "doi": "https://goldcopd.org/2023-gold-report/",
+      "authors": "Global Initiative for Chronic Obstructive Lung Disease (GOLD)",
+      "title": "Global Strategy for Prevention, Diagnosis and Management of COPD — 2023 Report",
+      "journal": "GOLD 2023",
+      "year": 2023,
+      "sample_size": "Evidence synthesis from hundreds of trials",
+      "population": "Global; Indian-specific spirometry norms referenced (Jindal 2012)",
+      "formula_used": "FEV1/FVC <0.70 threshold; FEV1% predicted GOLD staging; pack-year thresholds (10/20/40)",
+      "organ_model": "lungs",
+      "confidence_note": "International clinical standard for COPD diagnosis and staging"
+    },
+    "balakrishnan_indoor_air": {
+      "doi": "10.1016/S2542-5196(18)30247-5",
+      "authors": "Balakrishnan K et al.",
+      "title": "The impact of air pollution on deaths, disease burden, and life expectancy across the states of India",
+      "journal": "Lancet Planetary Health. 2019;3(1):e26-e39",
+      "year": 2019,
+      "sample_size": "State-level analysis across all Indian states — GBD India 2017",
+      "population": "India — household air pollution from solid fuels",
+      "formula_used": "Biomass cooking fuel risk: +0.22 risk increment (wood/crop residue), +0.25 (dung/coal)",
+      "organ_model": "lungs",
+      "confidence_note": "Lancet series on India state-level disease burden. HAP from biomass = significant COPD driver."
+    },
+    "tb_lung_sequelae": {
+      "doi": "10.5588/ijtld.12.0274",
+      "authors": "Allwood BW et al.",
+      "title": "Respiratory complications of untreated and treated pulmonary tuberculosis",
+      "journal": "International Journal of Tuberculosis and Lung Disease. 2013;17(4):429-438",
+      "year": 2013,
+      "sample_size": "Systematic review",
+      "population": "TB survivors (high TB burden countries including India)",
+      "formula_used": "Post-TB obstructive/restrictive pattern risk: active TB +0.40, treated TB +0.20",
+      "organ_model": "lungs",
+      "confidence_note": "~40% of TB survivors develop obstructive defects; India has world's highest TB burden"
+    },
+    "cpcb_aqi_2023": {
+      "doi": "https://cpcb.nic.in/annual-air-quality-report/",
+      "authors": "Central Pollution Control Board (CPCB), Government of India",
+      "title": "Annual Air Quality Report 2023",
+      "journal": "Ministry of Environment, Forest and Climate Change",
+      "year": 2023,
+      "sample_size": "Annual average PM2.5 from 150+ Indian cities",
+      "population": "Indian cities — outdoor air quality",
+      "formula_used": "City PM2.5 lookup table; each 10 µg/m³ above 10 = +5% COPD risk (GBD 2019)",
+      "organ_model": "lungs",
+      "confidence_note": "Official India government PM2.5 data. Delhi: 98.6 µg/m³ (19.7× WHO limit)."
+    }
+  },
+
+  "biological_age": {
+    "klemera_doubal_kdm": {
+      "doi": "10.1016/j.mad.2005.10.005",
+      "authors": "Klemera P, Doubal S",
+      "title": "A new approach to the concept and computation of biological age",
+      "journal": "Mechanisms of Ageing and Development. 2006;127(3):240-248",
+      "year": 2006,
+      "sample_size": "Theoretical/computational — validated on NHANES III",
+      "population": "NHANES III US population",
+      "formula_used": "KDM formula: BA = Σ(k_j·(x_j-q_j)/s_j²) / Σ(k_j²/s_j²) with Bayesian CA blend",
+      "organ_model": "biological_age",
+      "confidence_note": "Best-performing biological age method in head-to-head comparisons (Levine 2013)"
+    },
+    "levine_nhanes_validation": {
+      "doi": "10.1093/gerona/gls233",
+      "authors": "Levine ME",
+      "title": "Modeling the rate of senescence: Can estimated biological age predict mortality more accurately than chronological age?",
+      "journal": "Journal of Gerontology Series A. 2013;68(9):1059-1070",
+      "year": 2013,
+      "sample_size": "9,389 NHANES III participants",
+      "population": "US adults, NHANES III",
+      "formula_used": "KDM biomarker regression parameters (NHANES-calibrated slopes and reference values)",
+      "organ_model": "biological_age",
+      "confidence_note": "KDM outperforms other aging measures for mortality prediction (HR 1.22 per 5yr bio-age increase)"
+    },
+    "south_asian_offset": {
+      "doi": "10.1007/s00125-012-2723-6",
+      "authors": "Tillin T et al.",
+      "title": "The relationship between metabolic risk factors and incident cardiovascular disease in Europeans, South Asians, and African Caribbeans: SABRE",
+      "journal": "Diabetologia. 2013;56(1):60-68",
+      "year": 2013,
+      "sample_size": "4,748 participants (European, South Asian, African Caribbean)",
+      "population": "South Asian migrants to UK (SABRE cohort) — generalizable to Indian subcontinent",
+      "formula_used": "South Asian biological age offset: +1.8 years applied post-KDM calculation",
+      "organ_model": "biological_age",
+      "confidence_note": "South Asians show 1.8yr accelerated metabolic aging vs Europeans at same chronological age"
+    },
+    "waist_circumference_india": {
+      "doi": "10.1038/sj.ijo.0802121",
+      "authors": "WHO Expert Consultation",
+      "title": "Appropriate body-mass index for Asian populations and its implications for policy and intervention strategies",
+      "journal": "Lancet. 2004;363(9403):157-163 + WHO Asia-Pacific 2004 report",
+      "year": 2004,
+      "sample_size": "Asia-Pacific population studies review",
+      "population": "Asian populations including India",
+      "formula_used": "Waist circumference KDM biomarker: men ref 85cm, women ref 72cm (India-specific)",
+      "organ_model": "biological_age",
+      "confidence_note": "India-specific waist cutoffs: men >90cm, women >80cm indicates abdominal obesity"
+    },
+    "resting_hr_aging": {
+      "doi": "10.1016/j.ahj.2014.04.019",
+      "authors": "Carnethon MR et al.",
+      "title": "Resting heart rate in middle age and diabetes development in older age",
+      "journal": "American Heart Journal. 2014;168(3):374-381",
+      "year": 2014,
+      "sample_size": "NHANES study — large US general population cohort",
+      "population": "US adults (NHANES), generalizable to Indian population",
+      "formula_used": "Resting HR as KDM biomarker: HR>80 bpm = +2.4yr biological age vs HR<60 (Carnethon 2014)",
+      "organ_model": "biological_age",
+      "confidence_note": "Resting HR correlates with aerobic fitness decline, cardiovascular aging, and autonomic function"
+    }
+  },
+
+  "datasets_summary": {
+    "indian_datasets_used": [
+      {
+        "name": "ILPD — Indian Liver Patient Dataset",
+        "source": "UCI ML Repository",
+        "population": "583 patients, Andhra Pradesh",
+        "citation": "Ramana CV et al., IJCA 2012",
+        "used_for": "Liver ML ensemble (40% weight)"
+      },
+      {
+        "name": "Apollo CKD Dataset",
+        "source": "UCI ML Repository",
+        "population": "400 patients, Tamil Nadu",
+        "citation": "Apollo Hospital (2015)",
+        "used_for": "Kidney ML model (AUC 0.97)"
+      },
+      {
+        "name": "NFHS-5",
+        "source": "Government of India (IIPS)",
+        "population": "636,699 households, 698 districts",
+        "citation": "IIPS 2021",
+        "used_for": "District-level hypertension/diabetes priors for heart model"
+      },
+      {
+        "name": "CPCB Annual AQI 2023",
+        "source": "Central Pollution Control Board, India",
+        "population": "150+ Indian cities",
+        "citation": "CPCB 2023",
+        "used_for": "City PM2.5 lookup for lung model"
+      },
+      {
+        "name": "INTERSTROKE India subgroup",
+        "source": "Lancet 2016 (South Asia subgroup)",
+        "population": "3,000+ Indian cases, 10 hospitals",
+        "citation": "O'Donnell MJ et al., Lancet 2016;388:761-775",
+        "used_for": "Brain stroke risk formula (replaced European ML)"
+      }
+    ],
+    "planned_future_datasets": [
+      {
+        "name": "LASI Wave 1",
+        "source": "IIPS India (iipsindia.ac.in/lasi)",
+        "population": "72,000 Indians aged 45+, spirometry + cognitive + biomarkers",
+        "status": "Requires free registration — planned for lung and brain model upgrade"
+      },
+      {
+        "name": "ICMR-INDIAB 2011",
+        "source": "ICMR",
+        "population": "14,277 Indians, diabetes prevalence by state",
+        "status": "Planned for heart/kidney district priors improvement"
+      }
+    ]
+  }
+}

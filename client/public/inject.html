@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Injecting test report...</title></head>
+<body>
+<p>Loading test report...</p>
+<script>
+fetch('/test_report.json')
+  .then(r => r.json())
+  .then(data => {
+    localStorage.setItem('vitaltwin_report', JSON.stringify(data));
+    window.location.href = '/organs';
+  })
+  .catch(e => { document.body.innerHTML = 'Error: ' + e; });
+</script>
+</body>
+</html>

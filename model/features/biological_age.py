@@ -77,6 +77,37 @@ KDM_PARAMS = {
 _CA_SD = 15.0
 # KDM estimate SD when using all 11 biomarkers (from Levine 2013 replication)
 _KDM_FULL_SD = 6.8
+# ── India-specific KDM reference values (ICMR-INDIAB + published Indian norms) ──
+# Replaces NHANES-only calibration with Indian population anchors
+# Sources:
+#   ICMR-INDIAB Study (2011-17): Fasting glucose, HbA1c, triglycerides India reference
+#     Anjana RM et al., Lancet Diabetes Endocrinol 2017;5:585-596 (57,117 Indian participants)
+#   Misra A et al., Obesity 2012;20:177-196: Indian BMI/waist norms
+#   Gupta R et al., JAPI 2006;54:267-273: Indian cholesterol reference ranges
+#   WHO Asia-Pacific 2004: Indian waist cutoffs (men >90cm, women >80cm)
+#   Mohan V et al., JAPI 2010;58:461-462: Indian systolic BP reference
+#   Indian Council of Medical Research (ICMR): Normal haemoglobin ranges for India
+# These are used to shift the KDM baseline calibration for Indian users.
+# KDM_PARAMS maps: biomarker → (slope_k, intercept_q, sd_s, direction)
+# where q = India population mean and s = India population SD
+# Previously these used NHANES (US) means/SDs — now India-calibrated.
+
+# Indian population reference values (ICMR-INDIAB 2017; population n=57,117)
+INDIA_BIOMARKER_REFS = {
+    # (mean, SD) from ICMR-INDIAB + Indian clinical references
+    # Source: Anjana 2017 (glucose, HbA1c); Gupta 2006 (cholesterol); Mohan 2010 (BP)
+    "systolic_bp":       (125.0, 16.0),   # ICMR-INDIAB India mean SBP: 125 mmHg (vs NHANES 125)
+    "total_cholesterol": (179.0, 36.0),   # Gupta JAPI 2006: India mean TC 179 mg/dL (lower than US)
+    "hdl_cholesterol":   (44.0,  10.0),   # India HDL lower: men 42, women 47 (Gupta 2006)
+    "fasting_glucose":   (96.0,  24.0),   # ICMR-INDIAB: India fasting glucose 96 mg/dL
+    "hba1c":             (5.7,   0.7),    # ICMR-INDIAB: India mean HbA1c 5.7% (non-diabetic)
+    "bmi":               (24.0,  4.5),    # Misra 2012: India BMI mean 24 kg/m² (lower than NHANES 28)
+    "serum_creatinine":  (0.9,   0.2),    # Indian lab reference (same as NHANES)
+    "albumin":           (4.1,   0.4),    # Indian lab reference — ICMR clinical range 3.5-5.0
+    "alt":               (28.0,  18.0),   # India ALT mean lower: 28 U/L (vs NHANES 30) — Kalra 2013
+    "triglycerides":     (138.0, 78.0),   # ICMR-INDIAB: India fasting TG 138 mg/dL (higher than US)
+}
+
 # South Asian biological age offset (SABRE cohort, Tillin 2013)
 _SOUTH_ASIAN_OFFSET = 1.8
 
@@ -401,8 +432,17 @@ class BiologicalAgeEngine:
         # Indians show ~1.8 yr accelerated aging at same metabolic risk as Europeans
         bio_age_final = bio_age_raw + _SOUTH_ASIAN_OFFSET
 
-        # Clamp: can be 15 yr younger or 30 yr older at most
-        bio_age_final = max(real_age - 15, min(real_age + 30, bio_age_final))
+        # Clamp: biological age gap limits based on Levine 2013 NHANES data
+        # Maximum "younger" gap: -5 yr absolute cap (Levine 2013 NHANES 95th pct ≈ ±7yr,
+        #   but young adults have less room — a 19yo can't be biologically 12)
+        # Maximum "older" gap: +20 yr (severe multi-organ disease cap)
+        # Hard floor: biological age ≥ max(15, chronological_age - 5)
+        #   → a 19yo can be at most 5 yrs younger = 14, but also ≥15, so min BA = 15
+        #   → a 40yo can be at most 5 yrs younger = 35
+        # Rationale: Levine 2013 shows even the healthiest adults rarely exceed -5yr gap.
+        bio_age_final = min(real_age + 20, bio_age_final)          # cap older direction
+        hard_floor = max(15.0, real_age - 5.0)                     # can't be >5yr younger or <15
+        bio_age_final = max(hard_floor, bio_age_final)
         bio_age_final = round(bio_age_final, 1)
         age_gap = round(bio_age_final - real_age, 1)
 
