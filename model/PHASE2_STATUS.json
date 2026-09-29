@@ -1,0 +1,49 @@
+{
+  "phase2_status": {
+    "ilpd_indian_liver": {
+      "status": "\u2705 ACTIVE",
+      "details": "583 Indian patients (Andhra Pradesh), AUC 0.750, in liver ensemble (40% weight)",
+      "action_needed": null
+    },
+    "apollo_ckd": {
+      "status": "\u2705 ACTIVE",
+      "details": "400 Indian patients (Tamil Nadu), AUC 0.97, kidney ML primary model",
+      "action_needed": null
+    },
+    "nfhs5_districts": {
+      "status": "\u2705 ACTIVE",
+      "details": "698 districts, hypertension/diabetes priors for heart model",
+      "action_needed": null
+    },
+    "interstroke_india": {
+      "status": "\u2705 ACTIVE (formula, not raw data)",
+      "details": "3,000+ Indian cases, published ORs and PAR% embedded in brain_model.py",
+      "action_needed": null
+    },
+    "cpcb_aqi": {
+      "status": "\u2705 ACTIVE",
+      "details": "150+ Indian cities, annual PM2.5 lookup table in lungs_model.py",
+      "action_needed": null
+    },
+    "lasi_wave1": {
+      "status": "\u23f3 PENDING REGISTRATION",
+      "details": "72,000+ Indians \u2014 spirometry for lung model, cognitive data for brain model",
+      "action_needed": "Register at iipsindia.ac.in/lasi (free). See data/india/lasi/DOWNLOAD_INSTRUCTIONS.json",
+      "impact": "Would improve lung model confidence from 0.60 \u2192 ~0.85 (Indian spirometry norms)",
+      "citation": "IIPS & USC (2020). LASI Wave 1, 2017-18. Mumbai: IIPS."
+    },
+    "icmr_indiab": {
+      "status": "\u23f3 PENDING REQUEST",
+      "details": "14,277 Indians \u2014 state-level diabetes/metabolic prevalence",
+      "action_needed": "Email icmr datasharingpolicy@icmr.gov.in. See data/india/icmr_indiab/REQUEST_INSTRUCTIONS.json",
+      "impact": "Would improve heart/kidney district priors with state-level metabolic data",
+      "citation": "Anjana RM et al., Lancet Diabetes Endocrinol 2017;5(8):585-596"
+    }
+  },
+  "summary": {
+    "datasets_active": 5,
+    "datasets_pending": 2,
+    "total_indian_patients_in_models": "583 (liver) + 400 (kidney) + 698 districts (heart) + 3000+ INTERSTROKE cases (brain formula)",
+    "next_high_impact_step": "Download LASI Wave 1 \u2014 free registration, +72,000 Indian adults, spirometry data"
+  }
+}

@@ -1,0 +1,91 @@
+# ================================
+# model/.gitignore - Python / Flask API
+# ================================
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+.env
+.env.local
+
+# Distribution / packaging artifacts (locally installed packages)
+*.dist-info/
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Large binary / platform libs
+*.so
+*.dll
+*.dylib
+numpy.libs/
+scipy.libs/
+
+# Compiled / downloaded binaries
+ngrok.exe
+ngrok-win.zip
+ngrok-v3-stable-darwin-amd64.zip
+bin/
+
+# Locally installed packages (in-tree installs)
+sklearn_compat/
+sklearn_compat-0.1.5.dist-info/
+imbalanced_learn-0.14.1.dist-info/
+joblib-1.5.3.dist-info/
+numpy-2.4.4.dist-info/
+scikit_learn-1.8.0.dist-info/
+scipy-1.17.1.dist-info/
+threadpoolctl-3.6.0.dist-info/
+threadpoolctl.py
+
+# Loose wheel files
+scipy-1.17.1-cp311-cp311-win_amd64.whl
+
+# Data files (large datasets — keep structure, ignore heavy content)
+data/**
+!data/.gitkeep
+
+# Trained model files (large binaries) — ignore all binary artifacts in models/
+models/trained_models/
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.h5
+models/**/*.pt
+models/**/*.pth
+models/**/*.onnx
+
+# Log files
+*.log
+app_log.txt
+app_err.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/

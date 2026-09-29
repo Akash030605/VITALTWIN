@@ -1,0 +1,387 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   VitalTwin — Clinical Light Theme
+   Palette: clean white · emerald green primary · warm neutral background
+───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Core backgrounds */
+  --background:            #F8FAFB;   /* Warm neutral white — clean, airy */
+  --color-bg:              #F8FAFB;
+  --foreground:            #0F172A;   /* Near-black — maximum contrast */
+
+  /* Brand */
+  --color-primary:         #059669;   /* Emerald-600 — health, vitality, life */
+  --color-primary-deep:    #047857;   /* Emerald-700 — headings / active states */
+  --color-scan:            #34D399;   /* Emerald-400 — highlights / hover */
+  --color-accent:          #0EA5E9;   /* Sky blue — secondary accent / links */
+  --color-accent-amber:    #F59E0B;   /* Amber — risk/warning badges */
+
+  /* Surfaces */
+  --color-surface:         #FFFFFF;   /* Pure white cards */
+  --color-surface-2:       #F0FDF9;   /* Faint mint secondary surface */
+  --color-surface-border:  rgba(5, 150, 105, 0.18);  /* Emerald border */
+  --color-border-subtle:   #E2E8F0;   /* Neutral slate border for cards */
+
+  /* Text */
+  --color-muted:           #64748B;   /* Slate-500 — secondary text */
+  --color-muted-dim:       #94A3B8;   /* Slate-400 — captions, placeholders */
+
+  /* Fonts */
+  --font-heading: var(--font-poppins);
+  --font-body:    var(--font-poppins);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans:  var(--font-poppins);
+  --font-mono:  var(--font-geist-mono);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* ── Lenis smooth scroll ────────────────────────────────────────────────────── */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Font helpers ────────────────────────────────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BACKGROUND UTILITIES
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Subtle dot grid — very light sky-blue dots on white */
+.bg-dot-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(5, 150, 105, 0.10) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Soft scan line — translucent blue sweep */
+.scan-line {
+  background: linear-gradient(180deg, transparent 0%, rgba(5, 150, 105, 0.04) 50%, transparent 100%);
+  background-size: 100% 4px;
+  animation: scan 8s linear infinite;
+}
+@keyframes scan {
+  0%   { background-position: 0 -4px; }
+  100% { background-position: 0 100vh; }
+}
+
+/* Light vignette (very subtle — keeps edge definition) */
+.cinematic-vignette {
+  box-shadow: inset 0 0 40vmin rgba(5, 150, 105, 0.05);
+  pointer-events: none;
+}
+
+/* Soft spotlight */
+.cinematic-spotlight {
+  background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(5, 150, 105, 0.04) 80%, rgba(5, 150, 105, 0.08) 100%);
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CARD & PANEL STYLES
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Main card — white, clean shadow */
+.glass-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05), 0 4px 16px rgba(5, 150, 105, 0.06);
+}
+.glass-card-glow {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(5, 150, 105, 0.12), 0 4px 24px rgba(5, 150, 105, 0.08);
+}
+.glass-card-glow:hover {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(5, 150, 105, 0.25), 0 8px 32px rgba(5, 150, 105, 0.12);
+}
+
+/* Lab panel — clinical clean */
+.lab-panel {
+  border: 1px solid var(--color-surface-border);
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Game / HUD frame with corner brackets (lighter variant) */
+.game-hud-frame {
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.12), 0 2px 12px rgba(5, 150, 105, 0.06);
+}
+.game-hud-frame::before,
+.game-hud-frame::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--color-primary);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.5;
+}
+.game-hud-frame::before {
+  top: 8px; left: 8px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+.game-hud-frame::after {
+  bottom: 8px; right: 8px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* Game panel section */
+.game-panel {
+  border: 1px solid var(--color-surface-border);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 6px rgba(5, 150, 105, 0.06);
+  position: relative;
+}
+.game-panel::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.3), var(--color-accent), rgba(5, 150, 105, 0.3), transparent);
+  border-radius: 2px 2px 0 0;
+  pointer-events: none;
+}
+
+/* Letterbox */
+.letterbox {
+  box-shadow: inset 0 6vh 0 rgba(5, 150, 105, 0.04), inset 0 -6vh 0 rgba(5, 150, 105, 0.04);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORM INPUTS
+───────────────────────────────────────────────────────────────────────────── */
+
+.input-lab {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border-subtle);
+  color: var(--foreground);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-lab:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+.input-lab::placeholder {
+  color: var(--color-muted-dim);
+}
+
+.select-lab {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border-subtle);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23059669' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+.select-lab:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+.select-lab option {
+  background: #FFFFFF;
+  color: #111827;
+}
+.select-lab option:disabled { color: var(--color-muted); }
+.select-lab:hover { border-color: rgba(5, 150, 105, 0.4); }
+
+.select-lab-dropdown {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  isolation: isolate;
+  contain: layout paint;
+  transform: translateZ(0);
+}
+
+.form-select option         { color: #111827; background: #FFFFFF; }
+.form-select option:disabled { color: #6B7280; background: #F3F4F6; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY & GLOW
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Primary glow — subtle blue instead of teal on dark */
+.text-glow {
+  text-shadow: 0 0 20px rgba(5, 150, 105, 0.30), 0 0 40px rgba(5, 150, 105, 0.10);
+}
+.text-glow-primary {
+  text-shadow: 0 2px 12px rgba(5, 150, 105, 0.25);
+}
+.glow-primary {
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.18);
+}
+
+/* Hero headline */
+.hero-headline {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+.hero-headline:hover {
+  filter: drop-shadow(0 2px 16px rgba(5, 150, 105, 0.25));
+}
+
+/* Gradient text — sky blue → emerald (health + precision) */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-deep) 0%, var(--color-primary) 45%, var(--color-accent) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+}
+
+/* Tactical mono label */
+.tactical-label {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CTA & INTERACTIVE
+───────────────────────────────────────────────────────────────────────────── */
+
+.landing-cta {
+  transition: transform 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+}
+.landing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.22);
+}
+.landing-cta:active { transform: translateY(0); }
+
+.hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover { transform: translateY(-3px); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DASHBOARD ANIMATIONS
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Pulse wave — sky blue ripple on white bg */
+.pulse-wave-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+.pulse-wave-bg::before,
+.pulse-wave-bg::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.05) 0%, transparent 50%);
+  animation: pulse-wave 8s ease-in-out infinite;
+}
+.pulse-wave-bg::after {
+  animation-delay: -4s;
+  background: radial-gradient(circle at 30% 70%, rgba(16, 185, 129, 0.04) 0%, transparent 45%);
+}
+@keyframes pulse-wave {
+  0%, 100% { transform: scale(0.85); opacity: 0.5; }
+  50%       { transform: scale(1.15); opacity: 1;   }
+}
+
+/* Gauge pulse */
+.gauge-pulse .gauge-fill { animation: gauge-pulse 2s ease-in-out infinite; }
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.85; }
+}
+
+/* Scan ring (body model) — sky blue */
+.scan-ring-wrap { position: relative; }
+.scan-ring-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 2px solid rgba(5, 150, 105, 0.5);
+  opacity: 0;
+  animation: scan-ring-pulse 2.5s ease-out infinite;
+  pointer-events: none;
+  box-shadow: 0 0 16px rgba(5, 150, 105, 0.2);
+}
+.scan-ring-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  opacity: 0.6;
+  pointer-events: none;
+}
+@keyframes scan-ring-pulse {
+  0%   { transform: scale(0.3); opacity: 0.7; }
+  100% { transform: scale(1.4); opacity: 0;   }
+}
+
+/* Body model glow overlay */
+.model-glow-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(5, 150, 105, 0.06) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+/* Float subtle */
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+.animate-float-subtle { animation: float-subtle 4s ease-in-out infinite; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR — light theme
+───────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: rgba(5, 150, 105, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(5, 150, 105, 0.55); }
